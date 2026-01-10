@@ -166,6 +166,46 @@ async def list_tools() -> list[Tool]:
                 },
                 "required": ["query"]
             }
+        ),
+        Tool(
+            name="safeway_search_products",
+            description=(
+                "Search for products available at your local Safeway store. "
+                "Perfect for finding recipe ingredients or checking product availability."
+            ),
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "query": {
+                        "type": "string",
+                        "description": "Product name or keyword (e.g., 'milk', 'chicken breast', 'tomatoes')"
+                    },
+                    "limit": {
+                        "type": "integer",
+                        "description": "Maximum number of results to return (default: 20)",
+                        "default": 20
+                    }
+                },
+                "required": ["query"]
+            }
+        ),
+        Tool(
+            name="safeway_find_recipe_ingredients",
+            description=(
+                "Check availability of multiple recipe ingredients at once. "
+                "Ideal for AI-generated recipes - provide a list of ingredients and get availability status."
+            ),
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "ingredients": {
+                        "type": "array",
+                        "items": {"type": "string"},
+                        "description": "List of ingredient names (e.g., ['milk', 'eggs', 'flour', 'butter'])"
+                    }
+                },
+                "required": ["ingredients"]
+            }
         )
     ]
 
@@ -342,6 +382,61 @@ async def call_tool(name: str, arguments: Any) -> list[TextContent]:
             return [TextContent(
                 type="text",
                 text=json.dumps(result, indent=2)
+            )]
+        
+        elif name == "safeway_search_products":
+            client = get_client()
+            query = arguments.get("query", "")
+            limit = arguments.get("limit", 20)
+            
+            if not query:
+                return [TextContent(
+                    type="text",
+                    text="Error: search query is required"
+                )]
+            
+            products = client.search_products(query, limit)
+            
+            if products:
+                result = {
+                    "query": query,
+                    "found": len(products),
+                    "products": products
+                }
+                return [TextContent(
+                    type="text",
+                    text=json.dumps(result, indent=2)
+                )]
+            else:
+                return [TextContent(
+                    type="text",
+                    text=f"No products found for '{query}' at your local store."
+                )]
+        
+        elif name == "safeway_find_recipe_ingredients":
+            client = get_client()
+            ingredients = arguments.get("ingredients", [])
+            
+            if not ingredients:
+                return [TextContent(
+                    type="text",
+                    text="Error: ingredients list is required"
+                )]
+            
+            results = client.find_recipe_ingredients(ingredients)
+            
+            # Format a nice summary
+            summary_lines = ["Recipe Ingredient Availability Check:", ""]
+            for ingredient, data in results.items():
+                status = "✓ Available" if data['found'] else "❌ Not found"
+                summary_lines.append(f"{ingredient}: {status} ({data['count']} products)")
+            
+            summary_lines.append("\nDetailed Results:")
+            summary_lines.append(json.dumps(results, indent=2))
+            
+            return [TextContent(
+                type="text",
+                text="\n".join(summary_lines)
             )]
         
         else:

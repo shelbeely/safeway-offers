@@ -4,6 +4,7 @@ A Python-based client for interacting with Safeway's unofficial mobile API, with
 - **CLI tool** for command-line usage
 - **Web interface** using Flask
 - **MCP Server** for AI assistant integration (Claude, etc.)
+- **Recipe ingredient finder** for AI-generated recipes
 
 ## What's New - Python Rewrite
 
@@ -14,8 +15,28 @@ This project has been rewritten in Python with web technologies for better acces
 - 🌐 Web interface with Flask
 - 🤖 Model Context Protocol (MCP) server for AI assistants
 - 🔍 Enhanced API exploration capabilities
+- 🍳 **Recipe ingredient search** - Perfect for AI-generated recipes!
 - 🔐 Environment variable support for credentials
 - 📦 Simple pip installation
+
+## 🍳 Using for AI-Generated Recipes
+
+**New!** Perfect integration for finding recipe ingredients at your local store.
+
+```bash
+# Find all ingredients for a recipe
+python safeway_api.py --find-ingredients milk eggs flour butter sugar
+
+# Search for specific products
+python safeway_api.py --search-product "chicken breast"
+```
+
+**With AI Assistants (Claude):**
+- "Generate a recipe using ingredients on sale at my Safeway"
+- "Check if I can make lasagna with what's at my local store"
+- "Find the best proteins available and create a dinner recipe"
+
+👉 **[Complete Recipe Guide](RECIPE_GUIDE.md)**
 
 ## Quick Start
 
@@ -52,6 +73,14 @@ python safeway_api.py --check-api
 python safeway_api.py --explore --endpoint=all
 python safeway_api.py --explore --endpoint=offers
 python safeway_api.py --explore --endpoint=products
+
+# Search for products (NEW - great for recipes!)
+python safeway_api.py --search-product "chicken breast"
+python safeway_api.py --search-product "organic tomatoes"
+
+# Find recipe ingredients (NEW)
+python safeway_api.py --find-ingredients milk eggs flour butter
+python safeway_api.py --find-ingredients "ground beef" "taco shells" cheese lettuce
 ```
 
 ### Web Interface
@@ -121,6 +150,8 @@ Once configured, Claude can:
 - `safeway_explore_api` - Explore what data is available in the API
 - `safeway_check_api_status` - Check if API endpoints are working
 - `safeway_search_offers` - Search offers by keyword
+- **`safeway_search_products`** - Search for products at your local store (NEW)
+- **`safeway_find_recipe_ingredients`** - Check recipe ingredient availability (NEW)
 
 **Example Prompts for Claude:**
 
@@ -130,6 +161,12 @@ Once configured, Claude can:
 "Search for milk offers at Safeway"
 "Explore what other data the Safeway API provides"
 "Check if the Safeway API is working"
+
+NEW - Recipe Support:
+"Search for chicken breast at my local Safeway"
+"Check if these ingredients are available: milk, eggs, flour, butter, sugar"
+"Generate a dinner recipe using ingredients on sale at Safeway"
+"Find all ingredients for chocolate chip cookies at my store"
 ```
 
 ## GitHub Actions (Automated Offer Loading)

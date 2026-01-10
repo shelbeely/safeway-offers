@@ -229,6 +229,54 @@ class SafewayAPIClient:
         logger.info(f"✓ Added {total_new} new offers")
         return total_new
     
+    def search_products(self, query: str, limit: int = 20) -> List[Dict]:
+        """Search for products by name or keyword"""
+        if not self.authenticate():
+            return []
+        
+        try:
+            # Product search endpoint may require query parameter
+            url = f"{SafewayEndpoints.PRODUCT_SEARCH}?storeId={self.store_id}&q={query}&limit={limit}"
+            
+            response = self.session.get(
+                url,
+                headers={'Authorization': f'Bearer {self.access_token}'},
+                cookies={'swyConsumerDirectoryPro': self.access_token}
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                # Return products if found
+                if isinstance(data, dict) and 'products' in data:
+                    return data['products']
+                elif isinstance(data, list):
+                    return data
+                else:
+                    return [data]
+            else:
+                logger.warning(f"Product search returned status {response.status_code}")
+                return []
+        except Exception as e:
+            logger.error(f"Product search failed: {e}")
+            return []
+    
+    def find_recipe_ingredients(self, ingredients: List[str]) -> Dict[str, Any]:
+        """Search for multiple recipe ingredients at once"""
+        if not self.authenticate():
+            return {'error': 'Authentication failed'}
+        
+        results = {}
+        for ingredient in ingredients:
+            logger.info(f"Searching for: {ingredient}")
+            products = self.search_products(ingredient, limit=5)
+            results[ingredient] = {
+                'found': len(products) > 0,
+                'count': len(products),
+                'products': products[:5]  # Limit to top 5 results
+            }
+        
+        return results
+    
     def explore_api(self, endpoint: str = 'all') -> Dict[str, Any]:
         """Explore various API endpoints"""
         if not self.authenticate():
@@ -277,6 +325,9 @@ def main():
     parser.add_argument('--explore', action='store_true', help='Explore API endpoints')
     parser.add_argument('--endpoint', default='all', 
                        help='Endpoint to explore: all, offers, products, store, account, cart, weeklyad, orders')
+    parser.add_argument('--search-product', help='Search for a product by name')
+    parser.add_argument('--find-ingredients', nargs='+', 
+                       help='Find multiple recipe ingredients (e.g., --find-ingredients milk eggs flour)')
     
     args = parser.parse_args()
     
@@ -307,7 +358,20 @@ def main():
     
     client = SafewayAPIClient(args.username, args.password, args.store_id)
     
-    if args.explore:
+    if args.search_product:
+        print(f"Searching for product: {args.search_product}")
+        products = client.search_products(args.search_product)
+        if products:
+            print(f"\nFound {len(products)} products:")
+            print(json.dumps(products, indent=2))
+        else:
+            print("No products found")
+    elif args.find_ingredients:
+        print(f"Finding ingredients for recipe: {', '.join(args.find_ingredients)}")
+        results = client.find_recipe_ingredients(args.find_ingredients)
+        print("\nRecipe Ingredient Availability:")
+        print(json.dumps(results, indent=2))
+    elif args.explore:
         print(f"Exploring Safeway API ({args.endpoint})...")
         results = client.explore_api(args.endpoint)
         print(json.dumps(results, indent=2))
