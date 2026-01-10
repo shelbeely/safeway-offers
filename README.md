@@ -42,6 +42,8 @@ Stop manually clipping coupons and planning meals. Let Claude do it for you. Saf
 
 ## 🚀 Quick Start (5 Minutes)
 
+### For Humans
+
 **What you need:**
 - Python 3.8+
 - Safeway account
@@ -107,27 +109,132 @@ Should see 13 tools available. ✅
 
 ---
 
-## 🤖 For AI Agents
+---
 
-When configuring for a user, gather:
-1. OS (macOS/Windows/Linux)
-2. Python version
-3. Safeway email & password
-4. Store ID (from local.safeway.com)
-5. Absolute path to project
+## 🤖 For AI Agents / LLMs
 
-**Auto-setup sequence:**
+This section provides explicit instructions for AI assistants configuring this tool for users.
+
+### Pre-Setup Discovery
+
+Before installation, gather this information from the user:
+
+**Step 0: Determine environment**
+- Operating system (macOS, Windows, or Linux)
+- Python version (`python3 --version` - need 3.8+)
+- Claude Desktop already installed? (Y/N)
+- Have existing Claude config? (Y/N - if yes, must preserve)
+
+**Step 1: Get Safeway credentials**
+- Safeway account email
+- Safeway account password
+- Store ID (help user find at local.safeway.com)
+
+**Step 2: Choose installation path**
+- Ask user for installation directory
+- Convert to absolute path
+- Verify write permissions
+
+### Automated Setup Sequence
+
+Execute these steps in order:
+
+**Step 1: Clone and install dependencies**
 ```bash
-cd /absolute/path/to/safeway-offers && \
-pip install -r requirements.txt && \
-# Test: export credentials, run server, verify
-# Edit config at OS-specific path
-# Restart Claude Desktop
+cd /user/chosen/path
+git clone https://github.com/shelbeely/safeway-offers.git
+cd safeway-offers
+pip install -r requirements.txt
+```
+
+**Step 2: Determine config file location**
+- macOS: `~/Library/Application Support/Claude/claude_desktop_config.json`
+- Windows: `%APPDATA%\Claude\claude_desktop_config.json`
+- Linux: `~/.config/claude/claude_desktop_config.json`
+
+**Step 3: Read existing config (if exists)**
+```bash
+# Check if file exists
+if [ -f "$CONFIG_PATH" ]; then
+  # Parse existing JSON, preserve other mcpServers
+  # Add safeway entry to mcpServers object
+else
+  # Create new config structure
+fi
+```
+
+**Step 4: Write updated config**
+```json
+{
+  "mcpServers": {
+    "safeway": {
+      "command": "python3",
+      "args": ["/absolute/path/to/safeway-offers/safeway_mcp_server.py"],
+      "env": {
+        "SAFEWAY_USERNAME": "user@example.com",
+        "SAFEWAY_PASSWORD": "userpassword",
+        "SAFEWAY_STORE_ID": "2948"
+      }
+    }
+  }
+}
+```
+
+**Step 5: Verify installation**
+```bash
+# Test Python syntax
+python3 -m py_compile safeway_mcp_server.py
+
+# Test API connectivity (without auth)
+python3 safeway_api.py --check-api
+
+# Inform user to restart Claude Desktop
+```
+
+### Error Handling
+
+If setup fails, check:
+- Python version ≥ 3.8
+- `requests` library installed
+- Store ID is valid (4 digits)
+- Credentials are correct
+- Absolute path used (not relative)
+- Config JSON is valid
+- Claude Desktop is closed before editing config
+
+### Verification Steps
+
+After user restarts Claude:
+1. Ask user: "Do you have Safeway tools?"
+2. User should see 13 tools available
+3. Test with: "Load all my Safeway offers"
+4. Should authenticate and return offer data
+
+### Troubleshooting Commands
+
+If verification fails:
+```bash
+# Check config syntax
+python3 -m json.tool ~/path/to/claude_desktop_config.json
+
+# Test auth manually
+export SAFEWAY_USERNAME="email"
+export SAFEWAY_PASSWORD="pass"
+export SAFEWAY_STORE_ID="2948"
+python3 safeway_mcp_server.py
+
+# Check Python dependencies
+pip list | grep -E "requests|mcp"
+
+# Verify file permissions
+ls -l safeway_mcp_server.py
 ```
 
 ---
 
 ## ⚙️ Configuration
+
+### For Humans
 
 ### Config File Locations
 
@@ -226,6 +333,8 @@ $env:SAFEWAY_STORE_ID = "2948"
 
 ## 💬 Real Conversations
 
+### For Humans
+
 **Just talk to Claude naturally. It figures out what to do.**
 
 ### Example 1: Auto-Load Coupons
@@ -315,9 +424,9 @@ Claude: [Generates 7-day plan, $97.50 total, shows daily costs]
 
 ---
 
-## 🔧 For AI Agent Developers
+### For AI Agents
 
-**Tool sequences for automation:**
+**Tool call sequences for automation:**
 
 **Workflow 1: Load Offers**
 ```json
@@ -409,7 +518,11 @@ For budget constraints:
 
 ---
 
+---
+
 ## 🏗️ How It Works
+
+### For Humans
 
 ### MCP Server (`safeway_mcp_server.py`)
 
@@ -457,6 +570,10 @@ client = SafewayAPIClient(username, password, store_id)
 offers = client.get_personalized_offers()
 # Returns: List[PersonalizedOffer]
 ```
+
+### For AI Agents: Tool Reference
+
+The MCP server exposes these 13 tools for AI assistants to call:
 
 ### 13 Available Tools
 
@@ -557,7 +674,11 @@ All processing happens locally. Your credentials never leave your computer.
 
 ---
 
+---
+
 ## 🎯 Real Use Cases
+
+### For Humans
 
 ### Example 1: Weekly Meal Planning on Budget
 
@@ -682,7 +803,11 @@ Pick one and I'll build your shopping list.
 
 ---
 
+---
+
 ## 🗑️ Uninstall
+
+### For Humans
 
 ### Remove MCP Server Configuration
 
@@ -743,6 +868,43 @@ Verify removal:
 1. Open Claude Desktop
 2. Ask "Do you have Safeway tools?"
 3. Claude should say no
+
+### For AI Agents
+
+**Automated uninstall sequence:**
+
+**Step 1: Locate config file**
+```bash
+# macOS
+CONFIG_FILE="$HOME/Library/Application Support/Claude/claude_desktop_config.json"
+
+# Windows
+CONFIG_FILE="%APPDATA%\Claude\claude_desktop_config.json"
+
+# Linux
+CONFIG_FILE="$HOME/.config/claude/claude_desktop_config.json"
+```
+
+**Step 2: Remove safeway entry**
+```bash
+# Parse JSON, remove "safeway" from mcpServers
+# Preserve all other entries
+# Write back to file
+```
+
+**Step 3: Optionally remove project files**
+```bash
+# Only if user confirms deletion
+rm -rf /path/to/safeway-offers
+```
+
+**Step 4: Verify**
+```bash
+# Check config no longer has safeway entry
+grep -q "safeway" "$CONFIG_FILE" && echo "Not removed" || echo "Removed"
+```
+
+**Step 5: Instruct user to restart Claude Desktop**
 
 ---
 
