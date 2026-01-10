@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 )
 
@@ -13,7 +14,7 @@ var checkApi = flag.Bool("check-api", false, "check if Safeway API endpoints are
 // CheckAPIStatus checks if the key API endpoints are accessible
 func CheckAPIStatus() {
 	fmt.Println("Checking Safeway API endpoint status...")
-	fmt.Println("=" + string(make([]byte, 50)))
+	fmt.Println(strings.Repeat("=", 50))
 	
 	endpoints := map[string]string{
 		"OAuth Token Endpoint":      safewayOauthGetTokenUrl,
@@ -49,9 +50,23 @@ func CheckAPIStatus() {
 		}
 		resp.Body.Close()
 		
-		if resp.StatusCode == http.StatusUnauthorized || resp.StatusCode == http.StatusForbidden || 
-		   resp.StatusCode == http.StatusOK || resp.StatusCode == http.StatusBadRequest {
-			// These status codes indicate the endpoint exists
+		// These status codes indicate the endpoint exists
+		validStatusCodes := []int{
+			http.StatusOK,
+			http.StatusUnauthorized,
+			http.StatusForbidden,
+			http.StatusBadRequest,
+		}
+		
+		isValidStatus := false
+		for _, code := range validStatusCodes {
+			if resp.StatusCode == code {
+				isValidStatus = true
+				break
+			}
+		}
+		
+		if isValidStatus {
 			fmt.Printf("✓ Endpoint is accessible (Status: %d %s)\n", resp.StatusCode, resp.Status)
 		} else if resp.StatusCode == http.StatusNotFound {
 			fmt.Printf("❌ Endpoint not found (Status: 404)\n")
@@ -61,7 +76,7 @@ func CheckAPIStatus() {
 		}
 	}
 
-	fmt.Println("\n" + string(make([]byte, 50)))
+	fmt.Println("\n" + strings.Repeat("=", 50))
 	if allAccessible {
 		fmt.Println("✓ All API endpoints appear to be accessible!")
 		fmt.Println("\nNote: Authentication is required to use these endpoints.")
