@@ -111,7 +111,8 @@ Should see 13 tools available. ✅
 
 ---
 
-## 🤖 For AI Agents / LLMs
+<details>
+<summary><h2>🤖 For AI Agents / LLMs</h2></summary>
 
 This section provides explicit instructions for AI assistants configuring this tool for users.
 
@@ -229,6 +230,8 @@ pip list | grep -E "requests|mcp"
 # Verify file permissions
 ls -l safeway_mcp_server.py
 ```
+
+</details>
 
 ---
 
@@ -424,7 +427,8 @@ Claude: [Generates 7-day plan, $97.50 total, shows daily costs]
 
 ---
 
-### For AI Agents
+<details>
+<summary><h3>For AI Agents</h3></summary>
 
 **Tool call sequences for automation:**
 
@@ -516,6 +520,8 @@ For budget constraints:
 4. Suggest cheaper alternatives if over budget
 ```
 
+</details>
+
 ---
 
 ---
@@ -571,7 +577,8 @@ offers = client.get_personalized_offers()
 # Returns: List[PersonalizedOffer]
 ```
 
-### For AI Agents: Tool Reference
+<details>
+<summary><h3>For AI Agents: Tool Reference</h3></summary>
 
 The MCP server exposes these 13 tools for AI assistants to call:
 
@@ -671,6 +678,8 @@ All processing happens locally. Your credentials never leave your computer.
 4. Fetches real-time data from your store
 5. Returns results to Claude
 6. Claude formats it in natural language
+
+</details>
 
 ---
 
@@ -869,7 +878,8 @@ Verify removal:
 2. Ask "Do you have Safeway tools?"
 3. Claude should say no
 
-### For AI Agents
+<details>
+<summary><h3>For AI Agents</h3></summary>
 
 **Automated uninstall sequence:**
 
@@ -905,6 +915,8 @@ grep -q "safeway" "$CONFIG_FILE" && echo "Not removed" || echo "Removed"
 ```
 
 **Step 5: Instruct user to restart Claude Desktop**
+
+</details>
 
 ---
 
