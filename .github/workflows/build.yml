@@ -1,0 +1,88 @@
+# 📦 Build Validation Workflow
+# Validates that the project builds correctly
+# Checks: Python package, Docker images, deployment configs
+# Runs: On push to main and PRs
+
+name: 📦 Build Validation
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  python-build:
+    name: Python Package Build
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🐍 Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: 📦 Install build tools
+        run: |
+          python -m pip install --upgrade pip
+          pip install build setuptools wheel
+
+      - name: 🏗️ Build package
+        run: python -m build
+
+      - name: 📤 Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: python-package
+          path: dist/
+
+  docker-build:
+    name: Docker Image Build
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🐳 Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: 🏗️ Build Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./deployment/docker/Dockerfile
+          push: false
+          tags: safeway-mcp:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  config-validation:
+    name: Deployment Config Validation
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: ✅ Validate wrangler.toml
+        run: |
+          if [ -f wrangler.toml ]; then
+            echo "wrangler.toml exists ✅"
+          fi
+
+      - name: ✅ Validate docker-compose.yml
+        run: |
+          if [ -f deployment/docker/docker-compose.yml ]; then
+            echo "docker-compose.yml exists ✅"
+          fi
+
+      - name: ✅ Validate requirements.txt
+        run: |
+          if [ -f requirements.txt ]; then
+            echo "requirements.txt exists ✅"
+            python -m pip install --dry-run -r requirements.txt
+          fi

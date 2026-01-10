@@ -1,0 +1,72 @@
+# 🎨 Code Quality Checks
+# Reusable composite action for Python code quality
+# Usage: - uses: ./.github/actions/code-quality
+
+name: 🎨 Code Quality Checks
+description: Runs Black, Flake8, MyPy, and Bandit
+
+inputs:
+  check-formatting:
+    description: 'Run Black formatting check'
+    required: false
+    default: 'true'
+  check-linting:
+    description: 'Run Flake8 linting'
+    required: false
+    default: 'true'
+  check-types:
+    description: 'Run MyPy type checking'
+    required: false
+    default: 'true'
+  check-security:
+    description: 'Run Bandit security check'
+    required: false
+    default: 'true'
+
+runs:
+  using: composite
+  steps:
+    - name: 📦 Install quality tools
+      shell: bash
+      run: |
+        pip install black flake8 mypy bandit[toml]
+
+    - name: 🎨 Check formatting with Black
+      if: inputs.check-formatting == 'true'
+      shell: bash
+      run: |
+        echo "Checking code formatting..."
+        black --check --diff . || (echo "❌ Code formatting issues found. Run 'black .' to fix." && exit 1)
+
+    - name: 📏 Lint with Flake8
+      if: inputs.check-linting == 'true'
+      shell: bash
+      run: |
+        echo "Running Flake8 linter..."
+        # Stop on syntax errors
+        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+        # Warn on other issues
+        flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+
+    - name: 🔍 Type check with MyPy
+      if: inputs.check-types == 'true'
+      shell: bash
+      run: |
+        echo "Running MyPy type checker..."
+        mypy safeway_api.py safeway_mcp_server.py --ignore-missing-imports || echo "⚠️ Type checking issues found"
+
+    - name: 🔒 Security check with Bandit
+      if: inputs.check-security == 'true'
+      shell: bash
+      run: |
+        echo "Running Bandit security checker..."
+        bandit -r . -ll -f json -o bandit-report.json || true
+        bandit -r . -ll
+
+    - name: 📤 Upload Bandit report
+      if: inputs.check-security == 'true'
+      uses: actions/upload-artifact@v4
+      with:
+        name: bandit-security-report
+        path: bandit-report.json
+        if-no-files-found: ignore

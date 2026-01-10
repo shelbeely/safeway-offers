@@ -1,0 +1,17 @@
+# Auto-assign configuration
+# Automatically assigns reviewers based on files changed
+
+# Number of reviewers to assign
+numberOfReviewers: 1
+
+# Reviewers to assign (add GitHub usernames)
+reviewers:
+  - shelbeely
+
+# Skip these keywords in PR title
+skipKeywords:
+  - wip
+  - draft
+
+# Add assignees based on file paths
+addAssignees: true

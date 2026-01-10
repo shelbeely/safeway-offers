@@ -1,0 +1,66 @@
+# 📢 Notify
+# Reusable composite action for sending notifications
+# Usage: - uses: ./.github/actions/notify
+
+name: 📢 Notify
+description: Sends notifications to Slack, Discord, or other services
+
+inputs:
+  service:
+    description: 'Notification service (slack, discord, github)'
+    required: true
+  webhook-url:
+    description: 'Webhook URL for service'
+    required: false
+  message:
+    description: 'Message to send'
+    required: true
+  status:
+    description: 'Status (success, failure, warning)'
+    required: false
+    default: 'success'
+
+runs:
+  using: composite
+  steps:
+    - name: 📢 Send Slack notification
+      if: inputs.service == 'slack' && inputs.webhook-url != ''
+      shell: bash
+      run: |
+        COLOR="good"
+        if [ "${{ inputs.status }}" == "failure" ]; then
+          COLOR="danger"
+        elif [ "${{ inputs.status }}" == "warning" ]; then
+          COLOR="warning"
+        fi
+
+        curl -X POST ${{ inputs.webhook-url }} \
+          -H 'Content-Type: application/json' \
+          -d "{
+            \"attachments\": [{
+              \"color\": \"$COLOR\",
+              \"text\": \"${{ inputs.message }}\",
+              \"footer\": \"GitHub Actions\",
+              \"ts\": $(date +%s)
+            }]
+          }"
+
+    - name: 📢 Send Discord notification
+      if: inputs.service == 'discord' && inputs.webhook-url != ''
+      shell: bash
+      run: |
+        curl -X POST ${{ inputs.webhook-url }} \
+          -H 'Content-Type: application/json' \
+          -d "{
+            \"content\": \"${{ inputs.message }}\"
+          }"
+
+    - name: 📢 Create GitHub comment
+      if: inputs.service == 'github'
+      shell: bash
+      run: |
+        if [ "${{ github.event_name }}" == "pull_request" ]; then
+          gh pr comment ${{ github.event.pull_request.number }} --body "${{ inputs.message }}"
+        fi
+      env:
+        GITHUB_TOKEN: ${{ github.token }}

@@ -1,0 +1,72 @@
+# 🚀 Release Automation Workflow
+# Creates GitHub releases when version tags are pushed
+# Generates: Changelog, artifacts, release notes
+# Publishes: GitHub release, optional PyPI, optional Docker Hub
+
+name: 🚀 Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+
+jobs:
+  release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 🐍 Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: 📦 Install build tools
+        run: |
+          python -m pip install --upgrade pip
+          pip install build setuptools wheel
+
+      - name: 🏗️ Build package
+        run: python -m build
+
+      - name: 📝 Generate changelog
+        id: changelog
+        run: |
+          echo "# Changelog" > CHANGELOG.md
+          git log $(git describe --tags --abbrev=0 HEAD^)..HEAD --pretty=format:"- %s (%h)" >> CHANGELOG.md
+          cat CHANGELOG.md
+
+      - name: 🚀 Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: dist/*
+          body_path: CHANGELOG.md
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # Uncomment to publish to PyPI
+      # - name: 📦 Publish to PyPI
+      #   uses: pypa/gh-action-pypi-publish@release/v1
+      #   with:
+      #     password: ${{ secrets.PYPI_TOKEN }}
+
+      # Uncomment to push Docker image
+      # - name: 🐳 Build and push Docker image
+      #   uses: docker/build-push-action@v5
+      #   with:
+      #     context: .
+      #     file: ./deployment/docker/Dockerfile
+      #     push: true
+      #     tags: |
+      #       yourusername/safeway-mcp:latest
+      #       yourusername/safeway-mcp:${{ github.ref_name }}
