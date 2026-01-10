@@ -1011,6 +1011,25 @@ def new_method(self, param: str) -> Dict[str, Any]:
 - Add example in MCP_SERVER_GUIDE.md
 - Update CHANGELOG.md
 
+### Using the Documentation Agent
+
+For contributors working on documentation, we have a custom GitHub Copilot agent that helps maintain consistency:
+
+**Agent:** `@safeway-docs-maintainer` (`.github/agents/safeway-docs-maintainer.agent.md`)
+
+**What it does:**
+- Ensures documentation stays synchronized with code changes
+- Maintains dual-audience format (Humans / AI Agents)
+- Updates all relevant docs when tools are added/modified
+- Enforces style guidelines automatically
+
+**How to use:**
+- In GitHub Copilot: `@safeway-docs-maintainer, I added a new tool...`
+- In VS Code/JetBrains: Select from agents dropdown
+- For issues: Assign the agent to documentation-related issues
+
+The agent knows all the documentation patterns, style rules, and update triggers so you don't have to memorize them.
+
 ---
 
 ## ⚖️ License & Disclaimer
@@ -1035,9 +1054,11 @@ This project is for educational purposes only.
 ## 📚 More Documentation
 - **[MCP_QUICKSTART.md](MCP_QUICKSTART.md)** - 5-minute setup guide
 - **[MCP_SERVER_GUIDE.md](MCP_SERVER_GUIDE.md)** - Complete 30,000-word reference
+- **[CLOUDFLARE_DEPLOYMENT.md](CLOUDFLARE_DEPLOYMENT.md)** - Cloud deployment guide
 - **[COOKING_GUIDE.md](COOKING_GUIDE.md)** - Recipe and meal planning workflows
 - **[RECIPE_GUIDE.md](RECIPE_GUIDE.md)** - Recipe-specific features
 - **[API_STATUS.md](API_STATUS.md)** - API availability and status
+- **[.github/agents/](/.github/agents/)** - Custom GitHub Copilot agents for developers
 
 ## 🌐 Links & Community
 
