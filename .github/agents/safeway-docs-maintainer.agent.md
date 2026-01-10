@@ -43,9 +43,8 @@ You are a documentation maintenance specialist for the **Safeway MCP Server** pr
 2. Clone the repository
 3. Follow the 5-minute setup guide
 
-### For AI Agents / LLMs
 <details>
-<summary><h3>Automated Setup Sequence</h3></summary>
+<summary><strong>For AI Agents / LLMs</strong></summary>
 
 **Step 0:** Pre-setup discovery
 ```bash
@@ -160,7 +159,7 @@ When environment variables, paths, or configuration changes:
 **Collapsible AI Sections Format:**
 ```markdown
 <details>
-<summary><h3>For AI Agents / LLMs</h3></summary>
+<summary><strong>For AI Agents / LLMs</strong></summary>
 
 **Step 0:** Pre-setup discovery
 - Check OS: `uname -s` or `echo %OS%`

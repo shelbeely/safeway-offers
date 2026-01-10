@@ -1058,7 +1058,7 @@ This project is for educational purposes only.
 - **[COOKING_GUIDE.md](COOKING_GUIDE.md)** - Recipe and meal planning workflows
 - **[RECIPE_GUIDE.md](RECIPE_GUIDE.md)** - Recipe-specific features
 - **[API_STATUS.md](API_STATUS.md)** - API availability and status
-- **[.github/agents/](/.github/agents/)** - Custom GitHub Copilot agents for developers
+- **[.github/agents/](.github/agents/)** - Custom GitHub Copilot agents for developers
 
 ## 🌐 Links & Community
 
