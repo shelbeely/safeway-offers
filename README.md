@@ -9,6 +9,32 @@ This way you will not lose any money saving offers.
 
 You can schedule this to run every week to load the new offers
 
+## API Status (Updated January 2026)
+
+**The Safeway API appears to still be operational as of 2026**, though it's an unofficial/undocumented API used by the Safeway mobile app. The API endpoints (`nimbus.safeway.com` and `albertsons.okta.com`) continue to function, but note:
+
+- ⚠️ This is an **unofficial API** - Safeway/Albertsons may change or discontinue it at any time
+- The authentication system uses Okta OAuth 2.0, which receives regular updates
+- If the tool stops working, the API may have changed
+
+📋 **For detailed information about the API status, see [API_STATUS.md](API_STATUS.md)**
+
+### Checking API Status
+
+Before using the tool, you can verify if the API endpoints are accessible:
+
+**Windows:**
+```
+safeway-offers.exe -check-api
+```
+
+**macOS/Linux:**
+```
+./safeway-offers -check-api
+```
+
+This will test connectivity to all required API endpoints without requiring your credentials.
+
 ## Usage
 ##### Windows
 - Run `cmd.exe`
@@ -34,3 +60,31 @@ You can schedule this to run every week to load the new offers
 - Build it for the OS you need, and make sure to choose `amd64` architecture:
     - `env GOOS=target-OS GOARCH=amd64 go build github.com/giwty/safeway-offers`
     - `target-OS` can be `windows`, `darwin` (mac OS), `linux`, or any other (check the Go documentation for a complete list).
+
+## Troubleshooting
+
+### The tool isn't working anymore
+
+1. **Check API Status First**: Run `./safeway-offers -check-api` to verify the endpoints are accessible
+2. **Verify Credentials**: Make sure your Safeway username and password are correct
+3. **Check Safeway App**: Try logging into the official Safeway mobile app. If that works but this tool doesn't, the API may have changed
+4. **API Changes**: Safeway/Albertsons may have updated their API. Check for:
+   - New authentication methods
+   - Different API endpoints
+   - Updated OAuth client IDs/secrets
+   
+### Common Issues
+
+- **"401 Unauthorized"**: Your credentials may be incorrect, or the OAuth tokens may have expired
+- **"Cannot resolve host"**: Network connectivity issue or the API domain has changed
+- **"Non 200 response"**: The API structure may have changed, or there's a temporary service issue
+
+### Finding Updated API Information
+
+If the API has changed, you may need to:
+1. Use a proxy tool (like Charles Proxy or mitmproxy) to inspect the Safeway mobile app's network traffic
+2. Look for updated OAuth endpoints and client credentials
+3. Check the community for other tools that may have been updated
+
+For more information on reverse engineering private APIs, see: https://blog.jonlu.ca/posts/safeway
+

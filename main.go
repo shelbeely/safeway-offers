@@ -80,6 +80,12 @@ func main() {
 
 	flag.Parse()
 
+	// Check if user wants to verify API status
+	if *checkApi {
+		CheckAPIStatus()
+		return
+	}
+
 	if *storeId == "" || *userName == "" || *password == ""{
 		flag.Usage()
 		os.Exit(1)
