@@ -1,4 +1,4 @@
-# safeway Offers
+# Safeway Offers
 
 Safeway is a major US supermarket chain that offer a free members card.
 Members can use the Safeway app or site to load offers (either personal offers based on your shopping history, or generic manufacturer coupons).
@@ -9,6 +9,30 @@ This way you will not lose any money saving offers.
 
 You can schedule this to run every week to load the new offers
 
+## 🆕 Choose Your Version
+
+This project is available in two versions:
+
+### 🐍 Python Version (Recommended for Web Developers)
+**New!** Full rewrite in Python with web interface and AI integration.
+
+- ✅ Python-based for easier understanding
+- ✅ Flask web interface
+- ✅ Model Context Protocol (MCP) server for Claude and other AI assistants  
+- ✅ GitHub Actions support for automation
+- ✅ Enhanced API exploration
+
+👉 **[See Python Documentation](README_PYTHON.md)**
+
+### 🔧 Go Version (Original)
+Original command-line tool written in Go.
+
+- ✅ Fast and lightweight
+- ✅ Single binary deployment
+- ✅ Cross-platform (Windows, macOS, Linux)
+
+👉 Continue reading below for Go version instructions
+
 ## API Status (Updated January 2026)
 
 **The Safeway API appears to still be operational as of 2026**, though it's an unofficial/undocumented API used by the Safeway mobile app. The API endpoints (`nimbus.safeway.com` and `albertsons.okta.com`) continue to function, but note:
@@ -18,6 +42,10 @@ You can schedule this to run every week to load the new offers
 - If the tool stops working, the API may have changed
 
 📋 **For detailed information about the API status, see [API_STATUS.md](API_STATUS.md)**
+
+---
+
+## Go Version Usage (Original)
 
 ### Checking API Status
 
