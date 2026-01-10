@@ -1,0 +1,281 @@
+# 🎀 Cute Release Notes Workflow
+# Automatically generates adorable release notes from merged PRs
+# Features:
+# - Groups by feat/fix/docs/chore with cute descriptions
+# - "What changed for non-devs" section
+# - Breaking changes section with warnings
+# - Updates CHANGELOG.md automatically
+# - Enforces PR title format
+
+name: 🎀 Cute Release Notes
+
+on:
+  pull_request:
+    types: [closed]
+    branches: [main]
+  push:
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: read
+
+jobs:
+  # Validate PR title format (runs on PR)
+  validate-pr-title:
+    name: 📝 Validate PR Title Format
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Check PR title format
+        uses: amannn/action-semantic-pull-request@v5
+        with:
+          types: |
+            ✨ feat
+            🐛 fix
+            📚 docs
+            🔧 chore
+            🎨 style
+            ♻️ refactor
+            🧪 test
+            ⚡ perf
+            🔒 security
+            🚀 deploy
+          requireScope: false
+          subjectPattern: ^.+$
+          validateSingleCommit: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # Generate cute release notes (runs on merge or tag)
+  generate-release-notes:
+    name: 🎀 Generate Cute Release Notes
+    if: (github.event_name == 'pull_request' && github.event.pull_request.merged == true) || github.event_name == 'push'
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 🐍 Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: 📦 Install dependencies
+        run: |
+          pip install PyGithub requests
+
+      - name: 🎨 Generate cute release notes
+        id: generate
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          python3 << 'EOF'
+          import os
+          import re
+          import json
+          from datetime import datetime
+          from github import Github
+
+          # Initialize GitHub client
+          g = Github(os.environ['GITHUB_TOKEN'])
+          repo = g.get_repo(os.environ['GITHUB_REPOSITORY'])
+
+          # Get merged PRs since last release
+          try:
+              latest_release = repo.get_latest_release()
+              since_date = latest_release.created_at
+              version = "main"
+          except:
+              since_date = datetime(2020, 1, 1)
+              version = "main"
+
+          # Fetch merged PRs
+          pulls = repo.get_pulls(state='closed', sort='updated', direction='desc')
+          merged_prs = [pr for pr in pulls if pr.merged and pr.merged_at > since_date]
+
+          # Categorize PRs
+          categories = {
+              '✨ Features': [],
+              '🐛 Bug Fixes': [],
+              '📚 Documentation': [],
+              '🔒 Security': [],
+              '⚡ Performance': [],
+              '🎨 Style & Refactoring': [],
+              '🧪 Tests': [],
+              '🔧 Chores': [],
+          }
+
+          breaking_changes = []
+          non_dev_changes = []
+
+          emoji_map = {
+              '✨': '✨ Features',
+              'feat': '✨ Features',
+              '🐛': '🐛 Bug Fixes',
+              'fix': '🐛 Bug Fixes',
+              '📚': '📚 Documentation',
+              'docs': '📚 Documentation',
+              '🔒': '🔒 Security',
+              'security': '🔒 Security',
+              '⚡': '⚡ Performance',
+              'perf': '⚡ Performance',
+              '🎨': '🎨 Style & Refactoring',
+              'style': '🎨 Style & Refactoring',
+              '♻️': '🎨 Style & Refactoring',
+              'refactor': '🎨 Style & Refactoring',
+              '🧪': '🧪 Tests',
+              'test': '🧪 Tests',
+              '🔧': '🔧 Chores',
+              'chore': '🔧 Chores',
+              '🚀': '🔧 Chores',
+              'deploy': '🔧 Chores',
+          }
+
+          for pr in merged_prs[:50]:  # Limit to 50 most recent
+              title = pr.title
+              labels = [label.name for label in pr.labels]
+              
+              # Determine category
+              category = '🔧 Chores'  # default
+              for emoji, cat in emoji_map.items():
+                  if title.startswith(emoji) or title.startswith(emoji + ' '):
+                      category = cat
+                      break
+              
+              # Check for breaking changes
+              is_breaking = 'breaking' in ' '.join(labels).lower() or '⚠️' in title or 'BREAKING' in pr.body
+              
+              # Format PR entry
+              pr_entry = {
+                  'title': title,
+                  'number': pr.number,
+                  'url': pr.html_url,
+                  'author': pr.user.login,
+                  'labels': labels,
+                  'breaking': is_breaking
+              }
+              
+              # Add to category
+              if category in categories:
+                  categories[category].append(pr_entry)
+              
+              # Track breaking changes
+              if is_breaking:
+                  breaking_changes.append(pr_entry)
+              
+              # Identify non-dev changes
+              if any(tag in labels for tag in ['user-facing', 'enhancement', '✨ Features', '🐛 Bug Fixes']):
+                  non_dev_changes.append(pr_entry)
+
+          # Generate cute changelog
+          changelog = []
+          changelog.append("# 🎀 What's New & Cute!")
+          changelog.append("")
+          changelog.append(f"**Released:** {datetime.now().strftime('%B %d, %Y')}")
+          changelog.append("")
+
+          # Breaking changes section
+          if breaking_changes:
+              changelog.append("## ⚠️ Breaking Changes (Important!)")
+              changelog.append("")
+              changelog.append("_These changes might affect how you use the tool. Please read carefully! 💙_")
+              changelog.append("")
+              for pr in breaking_changes:
+                  changelog.append(f"- **{pr['title']}** [#{pr['number']}]({pr['url']}) by @{pr['author']}")
+              changelog.append("")
+
+          # Non-dev friendly section
+          if non_dev_changes:
+              changelog.append("## 💝 What Changed for You (Non-Dev Friendly)")
+              changelog.append("")
+              changelog.append("_Here's what's different in plain English:_")
+              changelog.append("")
+              for pr in non_dev_changes[:10]:  # Top 10 user-facing
+                  # Simplify technical titles
+                  simple_title = pr['title']
+                  simple_title = re.sub(r'^[✨🐛📚🔒⚡🎨♻️🧪🔧🚀]\s*(feat|fix|docs|security|perf|style|refactor|test|chore|deploy):\s*', '', simple_title)
+                  changelog.append(f"- 🎯 {simple_title} [#{pr['number']}]({pr['url']})")
+              changelog.append("")
+
+          # Technical sections
+          for category, prs in categories.items():
+              if prs:
+                  changelog.append(f"## {category}")
+                  changelog.append("")
+                  for pr in prs:
+                      changelog.append(f"- {pr['title']} [#{pr['number']}]({pr['url']}) by @{pr['author']}")
+                  changelog.append("")
+
+          # Footer
+          changelog.append("---")
+          changelog.append("")
+          changelog.append("_Made with 💝 by your friendly grocery assistant bot!_")
+          changelog.append("")
+          changelog.append(f"**Full Changelog**: https://github.com/{os.environ['GITHUB_REPOSITORY']}/compare/{version}")
+
+          # Save to file
+          changelog_content = '\n'.join(changelog)
+          with open('RELEASE_NOTES.md', 'w') as f:
+              f.write(changelog_content)
+
+          print("Generated cute release notes:")
+          print(changelog_content)
+
+          # Save for next step
+          with open('changelog_summary.txt', 'w') as f:
+              f.write(changelog_content[:500])  # First 500 chars for summary
+          EOF
+
+      - name: 📝 Update CHANGELOG.md
+        run: |
+          # Prepend new release notes to CHANGELOG.md
+          if [ -f CHANGELOG.md ]; then
+              cat RELEASE_NOTES.md > temp_changelog.md
+              echo "" >> temp_changelog.md
+              echo "---" >> temp_changelog.md
+              echo "" >> temp_changelog.md
+              cat CHANGELOG.md >> temp_changelog.md
+              mv temp_changelog.md CHANGELOG.md
+          else
+              mv RELEASE_NOTES.md CHANGELOG.md
+          fi
+          
+          echo "Updated CHANGELOG.md"
+
+      - name: 💾 Commit updated changelog
+        if: github.event_name != 'push' || !startsWith(github.ref, 'refs/tags/')
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add CHANGELOG.md
+          git diff --staged --quiet || git commit -m "📝 docs: Update CHANGELOG.md with cute release notes
+
+          Auto-generated from merged PRs"
+          git push
+
+      - name: 🎀 Create GitHub Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v1
+        with:
+          body_path: RELEASE_NOTES.md
+          draft: false
+          prerelease: false
+          generate_release_notes: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 📤 Upload release notes
+        uses: actions/upload-artifact@v4
+        with:
+          name: cute-release-notes
+          path: |
+            RELEASE_NOTES.md
+            CHANGELOG.md
