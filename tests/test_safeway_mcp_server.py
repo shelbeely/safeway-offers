@@ -1,4 +1,4 @@
-"""Unit tests for Safeway MCP Server"""
+"""Unit tests for PantryPilot"""
 import pytest
 
 def test_server_initialization():

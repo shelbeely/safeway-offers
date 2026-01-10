@@ -1,8 +1,8 @@
-# Safeway MCP Server - Complete Documentation
+# PantryPilot - Complete Documentation
 
 **Model Context Protocol Server for Safeway API Integration**
 
-The Safeway MCP Server is the **primary and recommended interface** for interacting with Safeway's API. It enables AI assistants like Claude to directly access your Safeway account for recipe planning, meal budgeting, and grocery shopping.
+The PantryPilot is the **primary and recommended interface** for interacting with Safeway's API. It enables AI assistants like Claude to directly access your Safeway account for recipe planning, meal budgeting, and grocery shopping.
 
 ---
 
@@ -23,7 +23,7 @@ The Safeway MCP Server is the **primary and recommended interface** for interact
 
 ## What is MCP?
 
-**Model Context Protocol (MCP)** is a standard protocol that allows AI assistants to interact with external tools and services. The Safeway MCP Server implements this protocol to give AI assistants like Claude direct access to the Safeway API.
+**Model Context Protocol (MCP)** is a standard protocol that allows AI assistants to interact with external tools and services. The PantryPilot implements this protocol to give AI assistants like Claude direct access to the Safeway API.
 
 ### Key Benefits
 
@@ -115,7 +115,7 @@ One conversation can:
 
 ```bash
 # Navigate to project directory
-cd /path/to/safeway-offers
+cd /path/to/pantrypilot
 
 # Install required packages
 pip install -r requirements.txt
@@ -169,7 +169,7 @@ Press `Ctrl+C` to stop the test.
      "mcpServers": {
        "safeway": {
          "command": "python3",
-         "args": ["/absolute/path/to/safeway-offers/safeway_mcp_server.py"],
+         "args": ["/absolute/path/to/pantrypilot/safeway_mcp_server.py"],
          "env": {
            "SAFEWAY_USERNAME": "your-email@example.com",
            "SAFEWAY_PASSWORD": "your-password",
@@ -181,7 +181,7 @@ Press `Ctrl+C` to stop the test.
    ```
 
 3. **Important:**
-   - Replace `/absolute/path/to/safeway-offers/` with your actual path
+   - Replace `/absolute/path/to/pantrypilot/` with your actual path
    - Use `python3` not `python` (unless your system uses `python`)
    - Use your actual Safeway credentials
    - Store ID must be a string in quotes
@@ -200,7 +200,7 @@ Press `Ctrl+C` to stop the test.
      "mcpServers": {
        "safeway": {
          "command": "python",
-         "args": ["C:\\full\\path\\to\\safeway-offers\\safeway_mcp_server.py"],
+         "args": ["C:\\full\\path\\to\\pantrypilot\\safeway_mcp_server.py"],
          "env": {
            "SAFEWAY_USERNAME": "your-email@example.com",
            "SAFEWAY_PASSWORD": "your-password",
@@ -1259,7 +1259,7 @@ Anything else you need help with?"
 
 ## Summary
 
-The **Safeway MCP Server is the recommended way** to interact with Safeway's API because it:
+The **PantryPilot is the recommended way** to interact with Safeway's API because it:
 
 ✅ Uses natural language - no commands to learn
 ✅ Handles complexity - AI figures out the workflow

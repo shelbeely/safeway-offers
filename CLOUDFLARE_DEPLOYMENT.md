@@ -1,6 +1,6 @@
 # 🌐 Cloudflare Deployment Guide
 
-**Deploy Safeway MCP Server to the cloud - always available, zero maintenance**
+**Deploy PantryPilot to the cloud - always available, zero maintenance**
 
 Run your AI grocery assistant on Cloudflare Workers for global availability and automatic scaling.
 
@@ -96,7 +96,7 @@ npm install -g wrangler
 **Step 2: Clone & Setup**
 
 ```bash
-cd /path/to/safeway-offers
+cd /path/to/pantrypilot
 npm install
 ```
 
@@ -145,7 +145,7 @@ Done! Your worker is live at `https://safeway-mcp-server.YOUR_ACCOUNT.workers.de
 
 ```bash
 # Navigate to project directory
-cd /path/to/safeway-offers
+cd /path/to/pantrypilot
 
 # Install Wrangler globally
 npm install -g wrangler
@@ -756,7 +756,7 @@ Claude can use either depending on context.
 
 - [Wrangler Docs](https://developers.cloudflare.com/workers/wrangler/)
 - [Workers Docs](https://developers.cloudflare.com/workers/)
-- [GitHub Issues](https://github.com/shelbeely/safeway-offers/issues)
+- [GitHub Issues](https://github.com/shelbeely/pantrypilot/issues)
 
 ### Common Questions
 

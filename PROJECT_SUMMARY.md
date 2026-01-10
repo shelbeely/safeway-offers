@@ -131,7 +131,7 @@ Automate offer loading with GitHub Actions:
 
 **Before (Go):**
 ```bash
-./safeway-offers -u "email" -p "pass" -id "2948"
+./pantrypilot -u "email" -p "pass" -id "2948"
 ```
 
 **After (Python):**
@@ -193,7 +193,7 @@ See [API_STATUS.md](API_STATUS.md) for detailed information.
 ## Files Overview
 
 ```
-safeway-offers/
+pantrypilot/
 ├── safeway_api.py              # Core Python API client + CLI
 ├── app.py                      # Flask web interface
 ├── safeway_mcp_server.py       # MCP server for AI assistants
@@ -214,8 +214,8 @@ safeway-offers/
 
 - 📖 [Full Documentation](README_PYTHON.md)
 - 🔍 [API Status](API_STATUS.md)
-- 🐛 [Report Issues](https://github.com/shelbeely/safeway-offers/issues)
-- 💬 [Discussions](https://github.com/shelbeely/safeway-offers/discussions)
+- 🐛 [Report Issues](https://github.com/shelbeely/pantrypilot/issues)
+- 💬 [Discussions](https://github.com/shelbeely/pantrypilot/discussions)
 
 ## Credits
 

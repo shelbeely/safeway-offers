@@ -1,4 +1,4 @@
-"""Integration tests for Safeway MCP Server"""
+"""Integration tests for PantryPilot"""
 import pytest
 
 @pytest.mark.integration

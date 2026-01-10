@@ -1,6 +1,6 @@
-# Safeway MCP Server - Quick Start
+# PantryPilot - Quick Start
 
-**Get started with the Safeway MCP Server in 5 minutes**
+**Get started with the PantryPilot in 5 minutes**
 
 ## What You Need
 
@@ -12,7 +12,7 @@
 
 ```bash
 # Install dependencies
-cd /path/to/safeway-offers
+cd /path/to/pantrypilot
 pip install -r requirements.txt
 ```
 

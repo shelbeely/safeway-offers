@@ -1,7 +1,7 @@
 {
-  "name": "safeway-mcp-server",
+  "name": "pantrypilot",
   "version": "1.0.0",
-  "description": "Safeway MCP Server deployable to Cloudflare Workers",
+  "description": "PantryPilot - AI-powered grocery assistant deployable to Cloudflare Workers",
   "main": "src/worker.js",
   "scripts": {
     "dev": "wrangler dev",

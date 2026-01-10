@@ -1,6 +1,6 @@
 # 🤖 Composite GitHub Actions
 
-Reusable composite actions for the Safeway MCP Server project. These actions reduce duplication across workflows and make CI/CD configuration cleaner and more maintainable.
+Reusable composite actions for the PantryPilot project. These actions reduce duplication across workflows and make CI/CD configuration cleaner and more maintainable.
 
 ---
 

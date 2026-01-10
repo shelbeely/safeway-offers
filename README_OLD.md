@@ -1,8 +1,8 @@
-# Safeway Offers
+# PantryPilot
 
-**Safeway MCP Server - AI-Powered Grocery Assistant**
+**PantryPilot - AI-Powered Grocery Assistant**
 
-The **Safeway MCP Server** is an AI-powered tool that connects Claude (and other AI assistants) directly to your Safeway account for intelligent grocery shopping, meal planning, and budget management.
+The **PantryPilot** is an AI-powered tool that connects Claude (and other AI assistants) directly to your Safeway account for intelligent grocery shopping, meal planning, and budget management.
 
 > **⚡ The MCP Server is the primary and recommended way to use this tool.**
 
@@ -130,8 +130,8 @@ Claude:
 
 ```bash
 # 1. Clone repository
-git clone https://github.com/shelbeely/safeway-offers
-cd safeway-offers
+git clone https://github.com/shelbeely/pantrypilot
+cd pantrypilot
 
 # 2. Install dependencies
 pip install -r requirements.txt
@@ -190,7 +190,7 @@ python app.py
 
 ### Go Version (Original)
 ```bash
-./safeway-offers -u email -p pass -id 2948
+./pantrypilot -u email -p pass -id 2948
 ```
 
 ## Use Cases
@@ -272,15 +272,15 @@ The original Go version is still available for users who prefer a simple command
 **Usage:**
 ```bash
 # Check API status
-./safeway-offers -check-api
+./pantrypilot -check-api
 
 # Load offers
-./safeway-offers -u "email" -p "password" -id "2948"
+./pantrypilot -u "email" -p "password" -id "2948"
 ```
 
 **Windows:**
 ```
-safeway-offers.exe -u "email" -p "password" -id "2948"
+pantrypilot.exe -u "email" -p "password" -id "2948"
 ```
 
 **Finding the binary:**
@@ -429,8 +429,8 @@ This project is for educational purposes. Use at your own risk.
 - **[PROJECT_SUMMARY.md](PROJECT_SUMMARY.md)** - Project architecture
 
 ### Support
-- **Issues:** [GitHub Issues](https://github.com/shelbeely/safeway-offers/issues)
-- **Discussions:** [GitHub Discussions](https://github.com/shelbeely/safeway-offers/discussions)
+- **Issues:** [GitHub Issues](https://github.com/shelbeely/pantrypilot/issues)
+- **Discussions:** [GitHub Discussions](https://github.com/shelbeely/pantrypilot/discussions)
 
 ---
 

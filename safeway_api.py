@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Safeway Offers API Client
+PantryPilot API Client
 A Python client for interacting with Safeway's unofficial mobile API
 """
 
@@ -660,7 +660,7 @@ def main():
     """Main CLI entry point"""
     import argparse
     
-    parser = argparse.ArgumentParser(description='Safeway Offers API Client')
+    parser = argparse.ArgumentParser(description='PantryPilot API Client')
     parser.add_argument('-u', '--username', help='Safeway username/email', 
                        default=os.environ.get('SAFEWAY_USERNAME'))
     parser.add_argument('-p', '--password', help='Safeway password',

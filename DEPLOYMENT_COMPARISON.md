@@ -1,6 +1,6 @@
 # 🌐 Deployment Platform Comparison
 
-Choose the best way to run your Safeway MCP Server - from your laptop to the cloud.
+Choose the best way to run your PantryPilot - from your laptop to the cloud.
 
 > **Quick Answer:** Start with Local Python (free, private). Need 24/7 access? Try Cloudflare Workers (100K requests/day free).
 

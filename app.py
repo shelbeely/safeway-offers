@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Safeway Offers Web Interface
+PantryPilot Web Interface
 A Flask-based web UI for the Safeway API client
 """
 

@@ -229,7 +229,7 @@ Use the `--explore` flag or web interface to discover what's available.
 ## Architecture
 
 ```
-safeway-offers/
+pantrypilot/
 ├── safeway_api.py          # Core API client (CLI)
 ├── app.py                  # Flask web interface
 ├── safeway_mcp_server.py   # MCP server for AI assistants
@@ -293,7 +293,7 @@ If you were using the Go version:
 
 **Old (Go):**
 ```bash
-./safeway-offers -u "email" -p "pass" -id "2948"
+./pantrypilot -u "email" -p "pass" -id "2948"
 ```
 
 **New (Python):**
@@ -365,5 +365,5 @@ This project is for educational purposes. Use at your own risk.
 ## Support
 
 - 📖 [API Documentation](API_STATUS.md)
-- 🐛 [Issue Tracker](https://github.com/shelbeely/safeway-offers/issues)
-- 💬 [Discussions](https://github.com/shelbeely/safeway-offers/discussions)
+- 🐛 [Issue Tracker](https://github.com/shelbeely/pantrypilot/issues)
+- 💬 [Discussions](https://github.com/shelbeely/pantrypilot/discussions)

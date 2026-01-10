@@ -1,4 +1,4 @@
-"""Pytest configuration and shared fixtures for Safeway MCP Server tests"""
+"""Pytest configuration and shared fixtures for PantryPilot tests"""
 import pytest
 import os
 from unittest.mock import Mock, MagicMock

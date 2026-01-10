@@ -74,7 +74,7 @@ If you encounter issues, try these steps in order:
 ### 1. Verify API Status
 Run the built-in API checker:
 ```bash
-./safeway-offers -check-api
+./pantrypilot -check-api
 ```
 
 ### 2. Test Official App

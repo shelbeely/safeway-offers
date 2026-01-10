@@ -1,8 +1,8 @@
-# 🛒 Safeway MCP Server
+# 🛒 PantryPilot
 
 **Grocery shopping on autopilot—powered by AI**
 
-Stop manually clipping coupons and planning meals. Let Claude do it for you. Safeway MCP Server connects AI assistants directly to your Safeway account, turning conversations into automated shopping lists, budget-friendly meal plans, and money-saving coupon loading—all from your local store's real-time data.
+Stop manually clipping coupons and planning meals. Let Claude do it for you. PantryPilot connects AI assistants directly to your Safeway account, turning conversations into automated shopping lists, budget-friendly meal plans, and money-saving coupon loading—all from your local store's real-time data.
 
 > *"I used to spend hours meal planning and coupon hunting. Now I just ask Claude and it's done in 30 seconds."*  
 > — Real user
@@ -54,8 +54,8 @@ Stop manually clipping coupons and planning meals. Let Claude do it for you. Saf
 **1. Install**
 
 ```bash
-git clone https://github.com/shelbeely/safeway-offers.git
-cd safeway-offers
+git clone https://github.com/shelbeely/pantrypilot.git
+cd pantrypilot
 pip install -r requirements.txt
 ```
 
@@ -80,7 +80,7 @@ Paste this:
   "mcpServers": {
     "safeway": {
       "command": "python3",
-      "args": ["/absolute/path/to/safeway-offers/safeway_mcp_server.py"],
+      "args": ["/absolute/path/to/pantrypilot/safeway_mcp_server.py"],
       "env": {
         "SAFEWAY_USERNAME": "your-email@example.com",
         "SAFEWAY_PASSWORD": "your-password",
@@ -143,8 +143,8 @@ Execute these steps in order:
 **Step 1: Clone and install dependencies**
 ```bash
 cd /user/chosen/path
-git clone https://github.com/shelbeely/safeway-offers.git
-cd safeway-offers
+git clone https://github.com/shelbeely/pantrypilot.git
+cd pantrypilot
 pip install -r requirements.txt
 ```
 
@@ -170,7 +170,7 @@ fi
   "mcpServers": {
     "safeway": {
       "command": "python3",
-      "args": ["/absolute/path/to/safeway-offers/safeway_mcp_server.py"],
+      "args": ["/absolute/path/to/pantrypilot/safeway_mcp_server.py"],
       "env": {
         "SAFEWAY_USERNAME": "user@example.com",
         "SAFEWAY_PASSWORD": "userpassword",
@@ -853,7 +853,7 @@ nano ~/.config/claude/claude_desktop_config.json
 cd /path/to/parent/directory
 
 # Remove entire project
-rm -rf safeway-offers
+rm -rf pantrypilot
 ```
 
 ### Remove Python Dependencies
@@ -905,7 +905,7 @@ CONFIG_FILE="$HOME/.config/claude/claude_desktop_config.json"
 **Step 3: Optionally remove project files**
 ```bash
 # Only if user confirms deletion
-rm -rf /path/to/safeway-offers
+rm -rf /path/to/pantrypilot
 ```
 
 **Step 4: Verify**
@@ -925,7 +925,7 @@ grep -q "safeway" "$CONFIG_FILE" && echo "Not removed" || echo "Removed"
 ### How to Contribute
 
 **Report Issues:**
-- Go to https://github.com/shelbeely/safeway-offers/issues
+- Go to https://github.com/shelbeely/pantrypilot/issues
 - Click "New Issue"
 - Describe the problem with reproduction steps
 - Include Python version, OS, and error messages
@@ -1015,7 +1015,7 @@ def new_method(self, param: str) -> Dict[str, Any]:
 
 For contributors working on documentation, we have a custom GitHub Copilot agent that helps maintain consistency:
 
-**Agent:** `@safeway-docs-maintainer` (`.github/agents/safeway-docs-maintainer.agent.md`)
+**Agent:** `@pantrypilot-docs-maintainer` (`.github/agents/pantrypilot-docs-maintainer.agent.md`)
 
 **What it does:**
 - Ensures documentation stays synchronized with code changes
@@ -1024,7 +1024,7 @@ For contributors working on documentation, we have a custom GitHub Copilot agent
 - Enforces style guidelines automatically
 
 **How to use:**
-- In GitHub Copilot: `@safeway-docs-maintainer, I added a new tool...`
+- In GitHub Copilot: `@pantrypilot-docs-maintainer, I added a new tool...`
 - In VS Code/JetBrains: Select from agents dropdown
 - For issues: Assign the agent to documentation-related issues
 
@@ -1062,7 +1062,7 @@ This project is for educational purposes only.
 
 ## 🌐 Links & Community
 
-- **Repository:** [github.com/shelbeely/safeway-offers](https://github.com/shelbeely/safeway-offers)
+- **Repository:** [github.com/shelbeely/pantrypilot](https://github.com/shelbeely/pantrypilot)
 - **Issues:** Report bugs or request features
 - **Discussions:** Ask questions, share tips
 

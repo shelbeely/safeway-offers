@@ -67,7 +67,7 @@ jobs:
           mkdir -p _site
           cp *.md _site/ || true
           cp -r docs _site/ || true
-          echo "<h1>Safeway MCP Server Documentation</h1>" > _site/index.html
+          echo "<h1>PantryPilot Documentation</h1>" > _site/index.html
           echo "<ul>" >> _site/index.html
           for file in _site/*.md; do
             basename="${file##*/}"

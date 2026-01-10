@@ -1,6 +1,6 @@
 # 🔒 Security Policy
 
-Keep your Safeway MCP Server secure. Report vulnerabilities responsibly.
+Keep your PantryPilot secure. Report vulnerabilities responsibly.
 
 ## ✅ Supported Versions - For Humans
 
@@ -64,7 +64,7 @@ fi
 **Step 1: Guide User to Proper Channel**
 ```markdown
 Please report this through GitHub Security Advisories:
-1. Go to: https://github.com/shelbeely/safeway-offers/security/advisories
+1. Go to: https://github.com/shelbeely/pantrypilot/security/advisories
 2. Click "Report a vulnerability"
 3. Fill out the form with:
    - Type of vulnerability
