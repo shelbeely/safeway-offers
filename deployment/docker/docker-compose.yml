@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  safeway-mcp:
+    build:
+      context: ../..
+      dockerfile: deployment/docker/Dockerfile
+    container_name: safeway-mcp-server
+    environment:
+      - SAFEWAY_USERNAME=${SAFEWAY_USERNAME}
+      - SAFEWAY_PASSWORD=${SAFEWAY_PASSWORD}
+      - SAFEWAY_STORE_ID=${SAFEWAY_STORE_ID}
+    restart: unless-stopped
+    networks:
+      - safeway-network
+
+networks:
+  safeway-network:
+    driver: bridge
