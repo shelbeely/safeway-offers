@@ -4,39 +4,63 @@ A Python-based client for interacting with Safeway's unofficial mobile API, with
 - **CLI tool** for command-line usage
 - **Web interface** using Flask
 - **MCP Server** for AI assistant integration (Claude, etc.)
-- **Recipe ingredient finder** for AI-generated recipes
+- **🍳 Complete Cooking Assistant** - Recipe recommendations, meal planning, budget tracking
 
-## What's New - Python Rewrite
+## What's New - Python Rewrite with Cooking Features
 
-This project has been rewritten in Python with web technologies for better accessibility:
+This project has been rewritten in Python with comprehensive cooking and recipe features:
 
-✨ **New Features:**
+✨ **Core Features:**
 - 🐍 Python-based for easier understanding and modification
 - 🌐 Web interface with Flask
 - 🤖 Model Context Protocol (MCP) server for AI assistants
-- 🔍 Enhanced API exploration capabilities
-- 🍳 **Recipe ingredient search** - Perfect for AI-generated recipes!
-- 🔐 Environment variable support for credentials
-- 📦 Simple pip installation
 
-## 🍳 Using for AI-Generated Recipes
+✨ **Cooking & Recipe Features:**
+- 🍳 **Recipe recommendations from current sales** - Get inspired by what's on sale!
+- 💰 **Budget meal planning** - Plan meals within your budget
+- 🛒 **Smart shopping lists** - With price estimates and sale indicators
+- 📅 **Weekly meal plans** - Automated 7-day plans based on sales
+- 💵 **Price comparison** - Find cheapest options for ingredients
+- 📊 **Cost tracking** - Per-serving and total meal costs
 
-**New!** Perfect integration for finding recipe ingredients at your local store.
+## 🎯 Perfect For
+
+- **AI-Generated Recipes**: "Generate a recipe using sale items at my Safeway"
+- **Budget Cooking**: "Plan dinners for $15/day using current sales"
+- **Meal Planning**: "Create a week of meals with my $100 budget"
+- **Price Shopping**: "Find the cheapest ingredients for lasagna"
+
+👉 **[Complete Cooking Guide](COOKING_GUIDE.md)** - Everything you need to know!
+
+## 🍳 Using for AI-Generated Recipes & Meal Planning
+
+**New!** Complete cooking assistant with budget tracking and recipe recommendations.
 
 ```bash
-# Find all ingredients for a recipe
-python safeway_api.py --find-ingredients milk eggs flour butter sugar
+# Get recipe recommendations from current sales
+python safeway_api.py --recommend-recipes
 
-# Search for specific products
-python safeway_api.py --search-product "chicken breast"
+# Find cheapest ingredients
+python safeway_api.py --find-cheapest "chicken breast"
+
+# Plan a budget meal
+python safeway_api.py --budget-plan chicken rice vegetables --max-budget 20.00
+
+# Build shopping list with prices
+python safeway_api.py --build-shopping-list milk eggs flour butter \
+    --recipe-name "Pancakes" --servings 4
+
+# Generate weekly meal plan
+python safeway_api.py --weekly-meal-plan --days 7 --budget-per-day 15.00
 ```
 
 **With AI Assistants (Claude):**
-- "Generate a recipe using ingredients on sale at my Safeway"
-- "Check if I can make lasagna with what's at my local store"
-- "Find the best proteins available and create a dinner recipe"
+- "Recommend recipes using items on sale at my Safeway"
+- "Plan a week of dinners for $100 total"
+- "Find the cheapest way to make lasagna"
+- "Build a shopping list for chicken stir fry with prices"
 
-👉 **[Complete Recipe Guide](RECIPE_GUIDE.md)**
+👉 **[Complete Cooking Guide](COOKING_GUIDE.md)** | **[Recipe Basics](RECIPE_GUIDE.md)**
 
 ## Quick Start
 

@@ -229,7 +229,7 @@ class SafewayAPIClient:
         logger.info(f"✓ Added {total_new} new offers")
         return total_new
     
-    def search_products(self, query: str, limit: int = 20) -> List[Dict]:
+    def search_products(self, query: str, limit: int = 20, sort_by_price: bool = False) -> List[Dict]:
         """Search for products by name or keyword"""
         if not self.authenticate():
             return []
@@ -247,18 +247,364 @@ class SafewayAPIClient:
             if response.status_code == 200:
                 data = response.json()
                 # Return products if found
+                products = []
                 if isinstance(data, dict) and 'products' in data:
-                    return data['products']
+                    products = data['products']
                 elif isinstance(data, list):
-                    return data
+                    products = data
                 else:
-                    return [data]
+                    products = [data]
+                
+                # Sort by price if requested
+                if sort_by_price and products:
+                    products = self._sort_by_price(products)
+                
+                return products
             else:
                 logger.warning(f"Product search returned status {response.status_code}")
                 return []
         except Exception as e:
             logger.error(f"Product search failed: {e}")
             return []
+    
+    def _sort_by_price(self, products: List[Dict]) -> List[Dict]:
+        """Sort products by price (lowest first)"""
+        def get_price(product):
+            # Try various price fields
+            price = product.get('price') or product.get('salePrice') or product.get('regularPrice')
+            if price:
+                # Convert to float if string
+                try:
+                    return float(price) if isinstance(price, (int, float, str)) else float('inf')
+                except (ValueError, TypeError):
+                    return float('inf')
+            return float('inf')
+        
+        return sorted(products, key=get_price)
+    
+    def find_cheapest_option(self, query: str, limit: int = 10) -> Dict[str, Any]:
+        """Find the cheapest option for a product"""
+        products = self.search_products(query, limit=limit, sort_by_price=True)
+        
+        if not products:
+            return {
+                'query': query,
+                'found': False,
+                'message': f'No products found for "{query}"'
+            }
+        
+        cheapest = products[0]
+        all_prices = [p for p in products if self._get_product_price(p) is not None]
+        
+        return {
+            'query': query,
+            'found': True,
+            'cheapest': cheapest,
+            'cheapest_price': self._get_product_price(cheapest),
+            'alternatives_count': len(products) - 1,
+            'all_options': products[:5],  # Top 5 cheapest
+            'price_range': {
+                'min': self._get_product_price(products[0]) if products else None,
+                'max': self._get_product_price(products[-1]) if products else None
+            } if all_prices else None
+        }
+    
+    def _get_product_price(self, product: Dict) -> Optional[float]:
+        """Extract price from product data"""
+        price = product.get('price') or product.get('salePrice') or product.get('regularPrice')
+        if price:
+            try:
+                return float(price)
+            except (ValueError, TypeError):
+                return None
+        return None
+    
+    def get_sale_items(self) -> List[Dict]:
+        """Get items currently on sale (from offers with price info)"""
+        if not self.authenticate():
+            return []
+        
+        sale_items = []
+        
+        # Get offers with savings
+        coupons = self.get_manufacturer_coupons()
+        offers = self.get_personalized_offers()
+        
+        for coupon in coupons:
+            if coupon.description:
+                sale_items.append({
+                    'type': 'manufacturer_coupon',
+                    'id': coupon.coupon_id,
+                    'description': coupon.description,
+                    'category': self._categorize_item(coupon.description)
+                })
+        
+        for offer in offers:
+            if offer.description or offer.name:
+                sale_items.append({
+                    'type': 'personalized_offer',
+                    'id': offer.offer_id,
+                    'name': offer.name,
+                    'description': offer.description,
+                    'category': self._categorize_item(offer.name or offer.description)
+                })
+        
+        return sale_items
+    
+    def _categorize_item(self, text: str) -> str:
+        """Categorize an item based on keywords"""
+        text_lower = text.lower()
+        
+        categories = {
+            'protein': ['chicken', 'beef', 'pork', 'fish', 'turkey', 'salmon', 'steak', 'meat', 'shrimp', 'tilapia'],
+            'dairy': ['milk', 'cheese', 'yogurt', 'butter', 'cream', 'egg'],
+            'produce': ['vegetable', 'fruit', 'lettuce', 'tomato', 'potato', 'apple', 'banana', 'carrot', 'broccoli'],
+            'pantry': ['pasta', 'rice', 'bread', 'cereal', 'flour', 'sugar', 'oil', 'sauce'],
+            'frozen': ['frozen', 'ice cream', 'pizza'],
+            'bakery': ['bread', 'bagel', 'muffin', 'cake', 'cookie']
+        }
+        
+        for category, keywords in categories.items():
+            if any(keyword in text_lower for keyword in keywords):
+                return category
+        
+        return 'other'
+    
+    def recommend_recipes_from_sales(self, cuisine_type: Optional[str] = None, 
+                                     dietary_restrictions: Optional[List[str]] = None) -> Dict[str, Any]:
+        """Recommend recipes based on current sale items"""
+        if not self.authenticate():
+            return {'error': 'Authentication failed'}
+        
+        logger.info("Analyzing sale items for recipe recommendations...")
+        sale_items = self.get_sale_items()
+        
+        if not sale_items:
+            return {
+                'recommendations': [],
+                'message': 'No sale items found to base recommendations on'
+            }
+        
+        # Categorize sale items
+        categorized = {}
+        for item in sale_items:
+            category = item.get('category', 'other')
+            if category not in categorized:
+                categorized[category] = []
+            categorized[category].append(item)
+        
+        # Generate recipe ideas based on available ingredients
+        recommendations = []
+        
+        # Recipe templates based on ingredient categories
+        recipe_templates = {
+            'protein_and_produce': {
+                'categories_needed': ['protein', 'produce'],
+                'recipes': [
+                    {'name': 'Stir Fry', 'additional': ['rice', 'soy sauce', 'garlic']},
+                    {'name': 'Grilled Protein with Roasted Vegetables', 'additional': ['olive oil', 'seasonings']},
+                    {'name': 'Sheet Pan Dinner', 'additional': ['potatoes', 'seasonings']}
+                ]
+            },
+            'protein_and_dairy': {
+                'categories_needed': ['protein', 'dairy'],
+                'recipes': [
+                    {'name': 'Creamy Chicken Pasta', 'additional': ['pasta', 'cream', 'garlic']},
+                    {'name': 'Cheesy Casserole', 'additional': ['pasta', 'breadcrumbs']},
+                    {'name': 'Protein and Cheese Quesadillas', 'additional': ['tortillas']}
+                ]
+            },
+            'protein_and_pantry': {
+                'categories_needed': ['protein', 'pantry'],
+                'recipes': [
+                    {'name': 'Protein Fried Rice', 'additional': ['eggs', 'vegetables']},
+                    {'name': 'Pasta with Protein', 'additional': ['tomato sauce', 'herbs']},
+                    {'name': 'Protein Tacos', 'additional': ['tortillas', 'toppings']}
+                ]
+            },
+            'dairy_and_produce': {
+                'categories_needed': ['dairy', 'produce'],
+                'recipes': [
+                    {'name': 'Fresh Salad with Cheese', 'additional': ['dressing']},
+                    {'name': 'Vegetable Frittata', 'additional': ['eggs', 'herbs']},
+                    {'name': 'Creamy Vegetable Soup', 'additional': ['broth', 'herbs']}
+                ]
+            }
+        }
+        
+        # Match available categories with recipe templates
+        available_categories = set(categorized.keys())
+        
+        for template_name, template in recipe_templates.items():
+            needed = set(template['categories_needed'])
+            if needed.issubset(available_categories):
+                for recipe in template['recipes']:
+                    # Get actual sale items for this recipe
+                    sale_ingredients = []
+                    for cat in template['categories_needed']:
+                        if cat in categorized:
+                            sale_ingredients.extend([
+                                item.get('name') or item.get('description', '')[:50]
+                                for item in categorized[cat][:2]  # Take up to 2 items per category
+                            ])
+                    
+                    recommendations.append({
+                        'recipe_name': recipe['name'],
+                        'sale_ingredients_available': sale_ingredients,
+                        'additional_ingredients_needed': recipe['additional'],
+                        'categories_used': list(needed),
+                        'estimated_savings': 'Using sale items'
+                    })
+        
+        return {
+            'total_sale_items': len(sale_items),
+            'categories_on_sale': list(categorized.keys()),
+            'sale_item_summary': {cat: len(items) for cat, items in categorized.items()},
+            'recommended_recipes': recommendations[:10],  # Top 10 recommendations
+            'sale_items_detail': categorized
+        }
+    
+    def build_shopping_list_for_recipe(self, recipe_name: str, ingredients: List[str],
+                                      servings: int = 4) -> Dict[str, Any]:
+        """Build a shopping list for a recipe with price estimates"""
+        if not self.authenticate():
+            return {'error': 'Authentication failed'}
+        
+        shopping_list = []
+        total_cost = 0.0
+        items_on_sale = []
+        
+        # Check each ingredient
+        for ingredient in ingredients:
+            # Find cheapest option
+            result = self.find_cheapest_option(ingredient, limit=5)
+            
+            if result['found']:
+                shopping_list.append({
+                    'ingredient': ingredient,
+                    'found': True,
+                    'cheapest_option': result['cheapest'],
+                    'price': result['cheapest_price'],
+                    'alternatives': len(result.get('all_options', [])) - 1
+                })
+                total_cost += result['cheapest_price']
+                
+                # Check if on sale
+                if self._is_on_sale(ingredient):
+                    items_on_sale.append(ingredient)
+            else:
+                shopping_list.append({
+                    'ingredient': ingredient,
+                    'found': False,
+                    'price': None
+                })
+        
+        cost_per_serving = total_cost / servings if servings > 0 else total_cost
+        
+        return {
+            'recipe_name': recipe_name,
+            'servings': servings,
+            'shopping_list': shopping_list,
+            'total_cost': round(total_cost, 2),
+            'cost_per_serving': round(cost_per_serving, 2),
+            'items_on_sale': items_on_sale,
+            'potential_savings': len(items_on_sale) > 0
+        }
+    
+    def _is_on_sale(self, ingredient: str) -> bool:
+        """Check if an ingredient matches any current sale items"""
+        sale_items = self.get_sale_items()
+        ingredient_lower = ingredient.lower()
+        
+        for item in sale_items:
+            text = (item.get('name', '') + ' ' + item.get('description', '')).lower()
+            if ingredient_lower in text or any(word in text for word in ingredient_lower.split()):
+                return True
+        
+        return False
+    
+    def get_weekly_meal_plan(self, days: int = 7, budget_per_day: Optional[float] = None) -> Dict[str, Any]:
+        """Generate a weekly meal plan based on sales and budget"""
+        if not self.authenticate():
+            return {'error': 'Authentication failed'}
+        
+        # Get recipe recommendations based on sales
+        recommendations = self.recommend_recipes_from_sales()
+        
+        if not recommendations.get('recommended_recipes'):
+            return {
+                'error': 'No recipes could be recommended based on current sales'
+            }
+        
+        recipes = recommendations['recommended_recipes']
+        meal_plan = []
+        total_budget_used = 0.0
+        
+        for day in range(1, min(days + 1, len(recipes) + 1)):
+            recipe = recipes[(day - 1) % len(recipes)]
+            
+            # Estimate cost (would need actual ingredient lookup for real costs)
+            estimated_cost = 15.0  # Placeholder - would calculate from actual ingredients
+            
+            if budget_per_day and total_budget_used + estimated_cost > (budget_per_day * day):
+                continue  # Skip if over budget
+            
+            meal_plan.append({
+                'day': day,
+                'recipe': recipe['recipe_name'],
+                'sale_ingredients': recipe['sale_ingredients_available'],
+                'additional_needed': recipe['additional_ingredients_needed'],
+                'estimated_cost': estimated_cost
+            })
+            
+            total_budget_used += estimated_cost
+        
+        return {
+            'days_planned': len(meal_plan),
+            'total_budget': budget_per_day * days if budget_per_day else None,
+            'estimated_total_cost': round(total_budget_used, 2),
+            'budget_remaining': round((budget_per_day * days) - total_budget_used, 2) if budget_per_day else None,
+            'meal_plan': meal_plan,
+            'shopping_summary': recommendations.get('sale_item_summary', {})
+        }
+    
+    def budget_meal_plan(self, ingredients: List[str], max_budget: Optional[float] = None) -> Dict[str, Any]:
+        """Find cheapest options for meal ingredients within budget"""
+        if not self.authenticate():
+            return {'error': 'Authentication failed'}
+        
+        results = {}
+        total_cost = 0.0
+        items_found = 0
+        items_missing = []
+        
+        for ingredient in ingredients:
+            logger.info(f"Finding cheapest option for: {ingredient}")
+            result = self.find_cheapest_option(ingredient, limit=10)
+            results[ingredient] = result
+            
+            if result['found']:
+                items_found += 1
+                price = result['cheapest_price']
+                if price:
+                    total_cost += price
+            else:
+                items_missing.append(ingredient)
+        
+        within_budget = max_budget is None or total_cost <= max_budget
+        
+        return {
+            'ingredients': results,
+            'summary': {
+                'total_items': len(ingredients),
+                'items_found': items_found,
+                'items_missing': items_missing,
+                'estimated_total': round(total_cost, 2),
+                'budget': max_budget,
+                'within_budget': within_budget,
+                'budget_remaining': round(max_budget - total_cost, 2) if max_budget else None
+            }
+        }
     
     def find_recipe_ingredients(self, ingredients: List[str]) -> Dict[str, Any]:
         """Search for multiple recipe ingredients at once"""
@@ -328,6 +674,24 @@ def main():
     parser.add_argument('--search-product', help='Search for a product by name')
     parser.add_argument('--find-ingredients', nargs='+', 
                        help='Find multiple recipe ingredients (e.g., --find-ingredients milk eggs flour)')
+    parser.add_argument('--find-cheapest', help='Find the cheapest option for a product')
+    parser.add_argument('--budget-plan', nargs='+', metavar='INGREDIENT',
+                       help='Plan budget-friendly meal with ingredients (e.g., --budget-plan milk eggs flour)')
+    parser.add_argument('--max-budget', type=float, 
+                       help='Maximum budget for budget meal plan (e.g., --max-budget 25.00)')
+    parser.add_argument('--recommend-recipes', action='store_true',
+                       help='Get recipe recommendations based on current sales')
+    parser.add_argument('--build-shopping-list', nargs='+', metavar='INGREDIENT',
+                       help='Build shopping list for a recipe with price estimates')
+    parser.add_argument('--recipe-name', help='Name of recipe for shopping list')
+    parser.add_argument('--servings', type=int, default=4,
+                       help='Number of servings for recipe (default: 4)')
+    parser.add_argument('--weekly-meal-plan', action='store_true',
+                       help='Generate a weekly meal plan based on sales')
+    parser.add_argument('--days', type=int, default=7,
+                       help='Number of days for meal plan (default: 7)')
+    parser.add_argument('--budget-per-day', type=float,
+                       help='Daily budget for meal plan (e.g., --budget-per-day 15.00)')
     
     args = parser.parse_args()
     
@@ -358,7 +722,83 @@ def main():
     
     client = SafewayAPIClient(args.username, args.password, args.store_id)
     
-    if args.search_product:
+    if args.find_cheapest:
+        print(f"Finding cheapest option for: {args.find_cheapest}")
+        result = client.find_cheapest_option(args.find_cheapest)
+        if result['found']:
+            print(f"\n💰 Cheapest Option: ${result['cheapest_price']:.2f}")
+            print(json.dumps(result, indent=2))
+        else:
+            print(f"❌ {result['message']}")
+    elif args.budget_plan:
+        budget_msg = f" (Budget: ${args.max_budget:.2f})" if args.max_budget else ""
+        print(f"Budget meal plan for: {', '.join(args.budget_plan)}{budget_msg}")
+        results = client.budget_meal_plan(args.budget_plan, args.max_budget)
+        
+        # Print summary
+        summary = results['summary']
+        print(f"\n📊 Budget Summary:")
+        print(f"   Items found: {summary['items_found']}/{summary['total_items']}")
+        print(f"   Estimated total: ${summary['estimated_total']:.2f}")
+        if summary['budget']:
+            status = "✓ Within budget" if summary['within_budget'] else "❌ Over budget"
+            print(f"   Budget: ${summary['budget']:.2f} - {status}")
+            if summary['within_budget']:
+                print(f"   Remaining: ${summary['budget_remaining']:.2f}")
+        if summary['items_missing']:
+            print(f"   Missing: {', '.join(summary['items_missing'])}")
+        
+        print("\n📝 Detailed Results:")
+        print(json.dumps(results, indent=2))
+    elif args.recommend_recipes:
+        print("🍳 Getting recipe recommendations based on current sales...")
+        results = client.recommend_recipes_from_sales()
+        if 'error' in results:
+            print(f"❌ {results['error']}")
+        else:
+            print(f"\n📊 Analysis of {results['total_sale_items']} sale items")
+            print(f"Categories on sale: {', '.join(results['categories_on_sale'])}")
+            print(f"\n💡 {len(results['recommended_recipes'])} Recipe Recommendations:\n")
+            for i, recipe in enumerate(results['recommended_recipes'][:10], 1):
+                print(f"{i}. {recipe['recipe_name']}")
+                print(f"   Sale items: {', '.join(recipe['sale_ingredients_available'][:3])}")
+                print(f"   Also need: {', '.join(recipe['additional_ingredients_needed'][:3])}\n")
+    elif args.build_shopping_list:
+        if not args.recipe_name:
+            print("❌ Error: --recipe-name is required with --build-shopping-list")
+            sys.exit(1)
+        print(f"🛒 Building shopping list for: {args.recipe_name} ({args.servings} servings)")
+        result = client.build_shopping_list_for_recipe(args.recipe_name, args.build_shopping_list, args.servings)
+        if 'error' in result:
+            print(f"❌ {result['error']}")
+        else:
+            print(f"\n💵 Total cost: ${result['total_cost']:.2f} (${result['cost_per_serving']:.2f}/serving)")
+            if result['items_on_sale']:
+                print(f"💰 Items on sale: {', '.join(result['items_on_sale'])}")
+            print("\n📝 Shopping list:")
+            for item in result['shopping_list']:
+                if item['found']:
+                    sale_tag = " 🏷️  ON SALE" if item['ingredient'] in result['items_on_sale'] else ""
+                    print(f"  ✓ {item['ingredient']}: ${item['price']:.2f}{sale_tag}")
+                else:
+                    print(f"  ❌ {item['ingredient']}: Not found")
+    elif args.weekly_meal_plan:
+        budget_msg = f" (${args.budget_per_day:.2f}/day)" if args.budget_per_day else ""
+        print(f"📅 Generating {args.days}-day meal plan{budget_msg}...")
+        result = client.get_weekly_meal_plan(args.days, args.budget_per_day)
+        if 'error' in result:
+            print(f"❌ {result['error']}")
+        else:
+            print(f"\n💵 Estimated total: ${result['estimated_total_cost']:.2f}")
+            if result['total_budget']:
+                print(f"Budget remaining: ${result['budget_remaining']:.2f}")
+            print(f"\n🍽️  {result['days_planned']}-Day Meal Plan:\n")
+            for meal in result['meal_plan']:
+                print(f"Day {meal['day']}: {meal['recipe']}")
+                print(f"  Sale items: {', '.join(meal['sale_ingredients'][:2])}")
+                print(f"  Also need: {', '.join(meal['additional_needed'][:3])}")
+                print(f"  Cost: ~${meal['estimated_cost']:.2f}\n")
+    elif args.search_product:
         print(f"Searching for product: {args.search_product}")
         products = client.search_products(args.search_product)
         if products:

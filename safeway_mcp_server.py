@@ -206,6 +206,120 @@ async def list_tools() -> list[Tool]:
                 },
                 "required": ["ingredients"]
             }
+        ),
+        Tool(
+            name="safeway_find_cheapest",
+            description=(
+                "Find the cheapest option for a specific product. "
+                "Perfect for budget meal planning - compares prices and shows alternatives."
+            ),
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "product": {
+                        "type": "string",
+                        "description": "Product to find cheapest option for (e.g., 'milk', 'chicken breast')"
+                    },
+                    "limit": {
+                        "type": "integer",
+                        "description": "Number of alternatives to compare (default: 10)",
+                        "default": 10
+                    }
+                },
+                "required": ["product"]
+            }
+        ),
+        Tool(
+            name="safeway_budget_meal_plan",
+            description=(
+                "Create a budget-friendly meal plan by finding cheapest options for all ingredients. "
+                "Calculates total cost and checks against budget. Perfect for cost-conscious cooking."
+            ),
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "ingredients": {
+                        "type": "array",
+                        "items": {"type": "string"},
+                        "description": "List of meal ingredients"
+                    },
+                    "max_budget": {
+                        "type": "number",
+                        "description": "Optional maximum budget in dollars (e.g., 25.00)"
+                    }
+                },
+                "required": ["ingredients"]
+            }
+        ),
+        Tool(
+            name="safeway_recommend_recipes",
+            description=(
+                "Get recipe recommendations based on what's currently on sale at Safeway. "
+                "Perfect for budget-conscious meal planning - uses sale items to suggest recipes."
+            ),
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "cuisine_type": {
+                        "type": "string",
+                        "description": "Optional cuisine preference (e.g., 'Italian', 'Mexican', 'Asian')"
+                    },
+                    "dietary_restrictions": {
+                        "type": "array",
+                        "items": {"type": "string"},
+                        "description": "Optional dietary restrictions (e.g., ['vegetarian', 'gluten-free'])"
+                    }
+                }
+            }
+        ),
+        Tool(
+            name="safeway_build_shopping_list",
+            description=(
+                "Build a complete shopping list for a recipe with price estimates. "
+                "Checks availability, finds best prices, and calculates total cost."
+            ),
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "recipe_name": {
+                        "type": "string",
+                        "description": "Name of the recipe"
+                    },
+                    "ingredients": {
+                        "type": "array",
+                        "items": {"type": "string"},
+                        "description": "List of ingredients needed"
+                    },
+                    "servings": {
+                        "type": "integer",
+                        "description": "Number of servings (default: 4)",
+                        "default": 4
+                    }
+                },
+                "required": ["recipe_name", "ingredients"]
+            }
+        ),
+        Tool(
+            name="safeway_weekly_meal_plan",
+            description=(
+                "Generate a complete weekly meal plan based on current sales and budget. "
+                "Creates a full week of meals using items on sale."
+            ),
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "days": {
+                        "type": "integer",
+                        "description": "Number of days to plan for (default: 7)",
+                        "default": 7
+                    },
+                    "budget_per_day": {
+                        "type": "number",
+                        "description": "Optional daily budget in dollars (e.g., 15.00)"
+                    }
+                },
+                "required": []
+            }
         )
     ]
 
@@ -438,6 +552,166 @@ async def call_tool(name: str, arguments: Any) -> list[TextContent]:
                 type="text",
                 text="\n".join(summary_lines)
             )]
+        
+        elif name == "safeway_find_cheapest":
+            client = get_client()
+            product = arguments.get("product", "")
+            limit = arguments.get("limit", 10)
+            
+            if not product:
+                return [TextContent(
+                    type="text",
+                    text="Error: product name is required"
+                )]
+            
+            result = client.find_cheapest_option(product, limit)
+            
+            if result['found']:
+                summary = f"💰 Cheapest option for '{product}': ${result['cheapest_price']:.2f}\n"
+                summary += f"Found {result['alternatives_count']} alternative(s)\n\n"
+                summary += json.dumps(result, indent=2)
+                return [TextContent(type="text", text=summary)]
+            else:
+                return [TextContent(
+                    type="text",
+                    text=f"❌ {result['message']}"
+                )]
+        
+        elif name == "safeway_budget_meal_plan":
+            client = get_client()
+            ingredients = arguments.get("ingredients", [])
+            max_budget = arguments.get("max_budget")
+            
+            if not ingredients:
+                return [TextContent(
+                    type="text",
+                    text="Error: ingredients list is required"
+                )]
+            
+            results = client.budget_meal_plan(ingredients, max_budget)
+            summary = results['summary']
+            
+            # Format summary
+            output_lines = ["🍳 Budget Meal Plan Results:", ""]
+            output_lines.append(f"Items found: {summary['items_found']}/{summary['total_items']}")
+            output_lines.append(f"Estimated total: ${summary['estimated_total']:.2f}")
+            
+            if summary['budget']:
+                status = "✓ Within budget" if summary['within_budget'] else "❌ Over budget"
+                output_lines.append(f"Budget: ${summary['budget']:.2f} - {status}")
+                if summary['within_budget']:
+                    output_lines.append(f"Remaining: ${summary['budget_remaining']:.2f}")
+            
+            if summary['items_missing']:
+                output_lines.append(f"\n❌ Missing items: {', '.join(summary['items_missing'])}")
+            
+            output_lines.append("\n📝 Detailed ingredient pricing:")
+            output_lines.append(json.dumps(results, indent=2))
+            
+            return [TextContent(
+                type="text",
+                text="\n".join(output_lines)
+            )]
+        
+        elif name == "safeway_recommend_recipes":
+            client = get_client()
+            cuisine_type = arguments.get("cuisine_type")
+            dietary_restrictions = arguments.get("dietary_restrictions")
+            
+            logger.info("Generating recipe recommendations from sale items...")
+            results = client.recommend_recipes_from_sales(cuisine_type, dietary_restrictions)
+            
+            if 'error' in results:
+                return [TextContent(type="text", text=f"Error: {results['error']}")]
+            
+            output_lines = ["🍳 Recipe Recommendations Based on Current Sales:", ""]
+            output_lines.append(f"Total sale items analyzed: {results['total_sale_items']}")
+            output_lines.append(f"Categories on sale: {', '.join(results['categories_on_sale'])}")
+            output_lines.append("")
+            
+            recipes = results.get('recommended_recipes', [])
+            if recipes:
+                output_lines.append(f"📋 {len(recipes)} Recipe Ideas:")
+                for i, recipe in enumerate(recipes[:5], 1):  # Show top 5
+                    output_lines.append(f"\n{i}. {recipe['recipe_name']}")
+                    output_lines.append(f"   Sale ingredients: {', '.join(recipe['sale_ingredients_available'][:3])}")
+                    output_lines.append(f"   You'll also need: {', '.join(recipe['additional_ingredients_needed'][:3])}")
+            else:
+                output_lines.append("No recipe recommendations available based on current sales.")
+            
+            output_lines.append("\n📝 Full details:")
+            output_lines.append(json.dumps(results, indent=2))
+            
+            return [TextContent(type="text", text="\n".join(output_lines))]
+        
+        elif name == "safeway_build_shopping_list":
+            client = get_client()
+            recipe_name = arguments.get("recipe_name", "")
+            ingredients = arguments.get("ingredients", [])
+            servings = arguments.get("servings", 4)
+            
+            if not recipe_name or not ingredients:
+                return [TextContent(
+                    type="text",
+                    text="Error: recipe_name and ingredients are required"
+                )]
+            
+            result = client.build_shopping_list_for_recipe(recipe_name, ingredients, servings)
+            
+            if 'error' in result:
+                return [TextContent(type="text", text=f"Error: {result['error']}")]
+            
+            output_lines = [f"🛒 Shopping List for {recipe_name} ({servings} servings):", ""]
+            output_lines.append(f"Total cost: ${result['total_cost']:.2f}")
+            output_lines.append(f"Cost per serving: ${result['cost_per_serving']:.2f}")
+            
+            if result['items_on_sale']:
+                output_lines.append(f"💰 Items on sale: {', '.join(result['items_on_sale'])}")
+            
+            output_lines.append("\n📝 Shopping list:")
+            for item in result['shopping_list']:
+                if item['found']:
+                    status = f"✓ ${item['price']:.2f}"
+                    if item['ingredient'] in result['items_on_sale']:
+                        status += " (ON SALE)"
+                    output_lines.append(f"  {item['ingredient']}: {status}")
+                else:
+                    output_lines.append(f"  {item['ingredient']}: ❌ Not found")
+            
+            output_lines.append("\n📊 Full details:")
+            output_lines.append(json.dumps(result, indent=2))
+            
+            return [TextContent(type="text", text="\n".join(output_lines))]
+        
+        elif name == "safeway_weekly_meal_plan":
+            client = get_client()
+            days = arguments.get("days", 7)
+            budget_per_day = arguments.get("budget_per_day")
+            
+            logger.info(f"Generating {days}-day meal plan...")
+            result = client.get_weekly_meal_plan(days, budget_per_day)
+            
+            if 'error' in result:
+                return [TextContent(type="text", text=f"Error: {result['error']}")]
+            
+            output_lines = [f"📅 {result['days_planned']}-Day Meal Plan:", ""]
+            output_lines.append(f"Estimated total cost: ${result['estimated_total_cost']:.2f}")
+            
+            if result['total_budget']:
+                output_lines.append(f"Total budget: ${result['total_budget']:.2f}")
+                output_lines.append(f"Budget remaining: ${result['budget_remaining']:.2f}")
+            
+            output_lines.append("\n🍽️ Daily meal plan:")
+            for meal in result['meal_plan']:
+                output_lines.append(f"\nDay {meal['day']}: {meal['recipe']}")
+                output_lines.append(f"  💰 Sale ingredients: {', '.join(meal['sale_ingredients'][:2])}")
+                output_lines.append(f"  🛒 Also need: {', '.join(meal['additional_needed'][:3])}")
+                output_lines.append(f"  💵 Est. cost: ${meal['estimated_cost']:.2f}")
+            
+            output_lines.append("\n📊 Full plan:")
+            output_lines.append(json.dumps(result, indent=2))
+            
+            return [TextContent(type="text", text="\n".join(output_lines))]
         
         else:
             return [TextContent(
