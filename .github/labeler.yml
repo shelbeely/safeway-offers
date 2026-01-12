@@ -1,0 +1,47 @@
+# Labeler configuration for auto-labeling PRs
+# Based on which files are changed
+
+"📚 docs":
+  - changed-files:
+    - any-glob-to-any-file: '**/*.md'
+    - any-glob-to-any-file: 'docs/**/*'
+
+"🔒 security":
+  - changed-files:
+    - any-glob-to-any-file: 'SECURITY.md'
+    - any-glob-to-any-file: '.github/workflows/security.yml'
+    - any-glob-to-any-file: '.github/dependabot.yml'
+
+"🧪 tests":
+  - changed-files:
+    - any-glob-to-any-file: 'tests/**/*'
+    - any-glob-to-any-file: 'pytest.ini'
+    - any-glob-to-any-file: '.github/workflows/test.yml'
+
+"🐍 python":
+  - changed-files:
+    - any-glob-to-any-file: '**/*.py'
+    - any-glob-to-any-file: 'requirements.txt'
+
+"🌐 javascript":
+  - changed-files:
+    - any-glob-to-any-file: '**/*.js'
+    - any-glob-to-any-file: 'package.json'
+    - any-glob-to-any-file: 'src/**/*'
+
+"🚀 deployment":
+  - changed-files:
+    - any-glob-to-any-file: 'deployment/**/*'
+    - any-glob-to-any-file: 'Dockerfile'
+    - any-glob-to-any-file: 'docker-compose.yml'
+    - any-glob-to-any-file: 'wrangler.toml'
+
+"🤖 ci":
+  - changed-files:
+    - any-glob-to-any-file: '.github/workflows/**/*'
+    - any-glob-to-any-file: '.github/actions/**/*'
+
+"🍳 cooking":
+  - changed-files:
+    - any-glob-to-any-file: 'COOKING_GUIDE.md'
+    - any-glob-to-any-file: 'RECIPE_GUIDE.md'

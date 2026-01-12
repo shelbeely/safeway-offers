@@ -1,0 +1,54 @@
+# Cloudflare Workers configuration for PantryPilot
+
+name = "pantrypilot"
+main = "src/worker.js"
+compatibility_date = "2024-01-10"
+node_compat = true
+
+# Account ID - Replace with your Cloudflare account ID
+# Find at: https://dash.cloudflare.com/ → Workers & Pages → Overview
+account_id = "YOUR_ACCOUNT_ID"
+
+# Workers configuration
+workers_dev = true
+
+# Environment variables (set via CLI or dashboard)
+# DO NOT commit real credentials here!
+[vars]
+# These are placeholders - set real values via:
+# wrangler secret put SAFEWAY_USERNAME
+# wrangler secret put SAFEWAY_PASSWORD
+# wrangler secret put SAFEWAY_STORE_ID
+
+# Secrets (use wrangler secret put <KEY>)
+# SAFEWAY_USERNAME
+# SAFEWAY_PASSWORD
+# SAFEWAY_STORE_ID
+
+# KV Namespaces for caching (optional)
+# [[kv_namespaces]]
+# binding = "SAFEWAY_CACHE"
+# id = "your-kv-namespace-id"
+# preview_id = "your-preview-kv-namespace-id"
+
+# Durable Objects (for session management - optional)
+# [[durable_objects.bindings]]
+# name = "SAFEWAY_SESSIONS"
+# class_name = "SafewaySession"
+# script_name = "safeway-mcp-server"
+
+# Routes (if using custom domain)
+# routes = [
+#   { pattern = "api.yourdomain.com/*", zone_name = "yourdomain.com" }
+# ]
+
+# Build configuration
+[build]
+command = "npm run build"
+cwd = "."
+watch_dirs = ["src"]
+
+# Development server
+[dev]
+port = 8787
+local_protocol = "http"

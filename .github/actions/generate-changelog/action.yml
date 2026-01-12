@@ -1,0 +1,79 @@
+# 📝 Generate Changelog
+# Reusable composite action for generating changelogs
+# Usage: - uses: ./.github/actions/generate-changelog
+
+name: 📝 Generate Changelog
+description: Generates changelog from commit messages
+
+inputs:
+  previous-tag:
+    description: 'Previous tag to compare against'
+    required: false
+  output-file:
+    description: 'Output file for changelog'
+    required: false
+    default: 'CHANGELOG.md'
+
+outputs:
+  changelog:
+    description: 'Generated changelog content'
+    value: ${{ steps.generate.outputs.changelog }}
+
+runs:
+  using: composite
+  steps:
+    - name: 📝 Generate changelog
+      id: generate
+      shell: bash
+      run: |
+        echo "# 📋 Changelog" > ${{ inputs.output-file }}
+        echo "" >> ${{ inputs.output-file }}
+        echo "**Generated:** $(date -u +"%Y-%m-%d %H:%M:%S UTC")" >> ${{ inputs.output-file }}
+        echo "" >> ${{ inputs.output-file }}
+
+        # Get previous tag if not provided
+        PREV_TAG="${{ inputs.previous-tag }}"
+        if [ -z "$PREV_TAG" ]; then
+          PREV_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+        fi
+
+        # Generate changelog sections
+        if [ -n "$PREV_TAG" ]; then
+          echo "## Changes since $PREV_TAG" >> ${{ inputs.output-file }}
+          echo "" >> ${{ inputs.output-file }}
+          
+          # Group by emoji/type
+          echo "### ✨ Features" >> ${{ inputs.output-file }}
+          git log $PREV_TAG..HEAD --pretty=format:"- %s (%h)" --grep="^✨\|^feat:" >> ${{ inputs.output-file }} || true
+          echo "" >> ${{ inputs.output-file }}
+          
+          echo "### 🐛 Bug Fixes" >> ${{ inputs.output-file }}
+          git log $PREV_TAG..HEAD --pretty=format:"- %s (%h)" --grep="^🐛\|^fix:" >> ${{ inputs.output-file }} || true
+          echo "" >> ${{ inputs.output-file }}
+          
+          echo "### 📚 Documentation" >> ${{ inputs.output-file }}
+          git log $PREV_TAG..HEAD --pretty=format:"- %s (%h)" --grep="^📚\|^docs:" >> ${{ inputs.output-file }} || true
+          echo "" >> ${{ inputs.output-file }}
+          
+          echo "### 🔒 Security" >> ${{ inputs.output-file }}
+          git log $PREV_TAG..HEAD --pretty=format:"- %s (%h)" --grep="^🔒\|^security:" >> ${{ inputs.output-file }} || true
+          echo "" >> ${{ inputs.output-file }}
+          
+          echo "### 🧪 Tests" >> ${{ inputs.output-file }}
+          git log $PREV_TAG..HEAD --pretty=format:"- %s (%h)" --grep="^🧪\|^test:" >> ${{ inputs.output-file }} || true
+          echo "" >> ${{ inputs.output-file }}
+          
+          echo "### 🎨 Other Changes" >> ${{ inputs.output-file }}
+          git log $PREV_TAG..HEAD --pretty=format:"- %s (%h)" --grep="^♻️\|^🎨\|^⚡\|^🚀\|^🔧" >> ${{ inputs.output-file }} || true
+        else
+          echo "## All Changes" >> ${{ inputs.output-file }}
+          git log --pretty=format:"- %s (%h)" >> ${{ inputs.output-file }}
+        fi
+
+        # Output for other steps
+        CHANGELOG=$(cat ${{ inputs.output-file }})
+        echo "changelog<<EOF" >> $GITHUB_OUTPUT
+        echo "$CHANGELOG" >> $GITHUB_OUTPUT
+        echo "EOF" >> $GITHUB_OUTPUT
+
+        cat ${{ inputs.output-file }}

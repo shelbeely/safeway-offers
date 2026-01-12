@@ -1,0 +1,36 @@
+version: 2
+updates:
+  # Python dependencies
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 10
+    reviewers:
+      - "shelbeely"
+    labels:
+      - "dependencies"
+      - "python"
+  
+  # Node.js dependencies (for Cloudflare Workers)
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 10
+    reviewers:
+      - "shelbeely"
+    labels:
+      - "dependencies"
+      - "javascript"
+  
+  # GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    reviewers:
+      - "shelbeely"
+    labels:
+      - "dependencies"
+      - "github-actions"

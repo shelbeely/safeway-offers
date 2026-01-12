@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "safeway": {
+      "command": "python",
+      "args": ["/absolute/path/to/safeway_mcp_server.py"],
+      "env": {
+        "SAFEWAY_USERNAME": "your-email@example.com",
+        "SAFEWAY_PASSWORD": "your-password",
+        "SAFEWAY_STORE_ID": "2948"
+      }
+    }
+  }
+}

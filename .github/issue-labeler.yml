@@ -1,0 +1,20 @@
+# Issue labeler configuration
+# Labels issues based on keywords in title and body
+
+bug:
+  - '\b(bug|error|issue|problem|broken|fix)\b'
+
+enhancement:
+  - '\b(feature|enhancement|improve|add|new)\b'
+
+documentation:
+  - '\b(doc|documentation|readme|guide)\b'
+
+question:
+  - '\b(question|how|what|why|help)\b'
+
+security:
+  - '\b(security|vulnerability|cve|exploit)\b'
+
+performance:
+  - '\b(performance|slow|speed|optimize)\b'

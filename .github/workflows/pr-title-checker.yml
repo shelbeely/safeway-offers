@@ -1,0 +1,95 @@
+# 📝 PR Title Checker Workflow
+# Enforces clean PR titles for auto-generated changelogs
+# Format: <emoji> <type>: <description>
+# or: <type>: <description>
+
+name: 📝 PR Title Checker
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened]
+
+permissions:
+  pull-requests: write
+
+jobs:
+  check-title:
+    name: 📝 Validate PR Title
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: 📋 Check PR title format
+        uses: amannn/action-semantic-pull-request@v5
+        with:
+          # Allow emoji or text prefix
+          types: |
+            ✨|feat
+            🐛|fix
+            📚|docs
+            🔧|chore
+            🎨|style
+            ♻️|refactor
+            🧪|test
+            ⚡|perf
+            🔒|security
+            🚀|deploy
+            🌐|i18n
+            ♿|a11y
+          requireScope: false
+          subjectPattern: ^.+$
+          subjectPatternError: |
+            The subject "{subject}" doesn't match our requirements.
+            Please write a clear description of what changed.
+          validateSingleCommit: false
+          ignoreLabels: |
+            skip-changelog
+            bot
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 💡 Comment with format help
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const comment = `## 📝 PR Title Format Help
+
+            Your PR title needs to follow this format for our cute auto-changelog! 🎀
+
+            ### ✅ Correct Format:
+            \`\`\`
+            <emoji> <type>: <description>
+            \`\`\`
+
+            ### 🎯 Examples:
+            - \`✨ feat: Add cute recipe recommendations\`
+            - \`🐛 fix: Handle authentication timeout gracefully\`
+            - \`📚 docs: Update installation guide\`
+            - \`🔒 security: Add input validation\`
+
+            ### 📋 Available Types:
+            - \`✨ feat\` - New features
+            - \`🐛 fix\` - Bug fixes
+            - \`📚 docs\` - Documentation changes
+            - \`🔒 security\` - Security improvements
+            - \`🧪 test\` - Test additions/changes
+            - \`⚡ perf\` - Performance improvements
+            - \`🎨 style\` - Code style/formatting
+            - \`♻️ refactor\` - Code refactoring
+            - \`🔧 chore\` - Maintenance tasks
+            - \`🚀 deploy\` - Deployment changes
+
+            ### ⚠️ Breaking Changes?
+            If your PR has breaking changes, add \`⚠️\` at the start or add "breaking" label!
+
+            ### 💡 Why This Matters:
+            We auto-generate cute, readable release notes from PR titles. Clean titles = happy users! 💝
+
+            _Edit your PR title above to match the format, then this check will pass! ✨_`;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.name,
+              body: comment
+            });
